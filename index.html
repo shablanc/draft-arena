@@ -1,0 +1,1017 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DRAFT ARENA</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Noto+Sans+KR:wght@300;400;500;700&family=Rajdhani:wght@500;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --gold: #C9A84C;
+  --gold-light: #F0D080;
+  --gold-dim: #7A5F28;
+  --bg: #080A0F;
+  --bg2: #0D1018;
+  --bg3: #12161F;
+  --bg4: #1A1F2E;
+  --border: rgba(201,168,76,0.2);
+  --border-bright: rgba(201,168,76,0.6);
+  --text: #E8E0CC;
+  --text-dim: #7A7060;
+  --red: #C94C4C;
+  --green: #4CB87A;
+  --blue: #4C8BC9;
+  --purple: #8B4CC9;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { width: 100%; min-height: 100vh; background: var(--bg); color: var(--text); font-family: 'Noto Sans KR', sans-serif; overflow-x: hidden; }
+
+/* BACKGROUND TEXTURE */
+body::before {
+  content: '';
+  position: fixed; inset: 0;
+  background:
+    radial-gradient(ellipse 80% 50% at 50% -10%, rgba(201,168,76,0.07) 0%, transparent 60%),
+    repeating-linear-gradient(0deg, transparent, transparent 39px, rgba(201,168,76,0.03) 39px, rgba(201,168,76,0.03) 40px),
+    repeating-linear-gradient(90deg, transparent, transparent 39px, rgba(201,168,76,0.03) 39px, rgba(201,168,76,0.03) 40px);
+  pointer-events: none; z-index: 0;
+}
+
+/* SCREENS */
+.screen { display: none; position: relative; z-index: 1; min-height: 100vh; }
+.screen.active { display: flex; flex-direction: column; }
+
+/* ===== TOP NAV ===== */
+.topbar {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 32px; height: 56px;
+  border-bottom: 1px solid var(--border);
+  background: rgba(8,10,15,0.9);
+  backdrop-filter: blur(12px);
+  position: sticky; top: 0; z-index: 100;
+}
+.topbar-logo { font-family: 'Bebas Neue', sans-serif; font-size: 28px; letter-spacing: 4px; color: var(--gold); }
+.topbar-info { display: flex; gap: 24px; align-items: center; font-size: 12px; color: var(--text-dim); }
+.topbar-info span { color: var(--text); font-weight: 500; }
+.topbar-actions { display: flex; gap: 10px; }
+
+/* BUTTONS */
+.btn {
+  padding: 8px 20px; border-radius: 2px; font-size: 13px; font-weight: 500;
+  cursor: pointer; transition: all 0.15s; font-family: 'Noto Sans KR', sans-serif;
+  letter-spacing: 0.5px; border: none;
+}
+.btn-gold {
+  background: var(--gold); color: #080A0F;
+}
+.btn-gold:hover { background: var(--gold-light); }
+.btn-outline {
+  background: transparent; color: var(--gold);
+  border: 1px solid var(--border-bright);
+}
+.btn-outline:hover { background: rgba(201,168,76,0.1); }
+.btn-sm { padding: 5px 14px; font-size: 12px; }
+.btn-danger { background: var(--red); color: #fff; }
+.btn-danger:hover { background: #e55; }
+.btn-success { background: var(--green); color: #080A0F; }
+.btn-success:hover { filter: brightness(1.1); }
+.btn-ghost { background: rgba(255,255,255,0.05); color: var(--text); border: 1px solid rgba(255,255,255,0.1); }
+.btn-ghost:hover { background: rgba(255,255,255,0.09); }
+
+/* ===== SETUP SCREEN ===== */
+#setup-screen {
+  align-items: center; justify-content: center; padding: 60px 24px;
+}
+.setup-card {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  width: 100%; max-width: 860px;
+  overflow: hidden;
+}
+.setup-header {
+  padding: 32px 40px 24px;
+  border-bottom: 1px solid var(--border);
+  background: linear-gradient(135deg, var(--bg3), var(--bg2));
+}
+.setup-title {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 40px; letter-spacing: 6px; color: var(--gold);
+  margin-bottom: 4px;
+}
+.setup-sub { font-size: 13px; color: var(--text-dim); }
+.setup-body { padding: 32px 40px; display: flex; flex-direction: column; gap: 32px; }
+.setup-section-title {
+  font-size: 11px; letter-spacing: 3px; color: var(--gold-dim);
+  text-transform: uppercase; margin-bottom: 14px;
+  font-family: 'Rajdhani', sans-serif;
+}
+.form-row { display: flex; gap: 12px; align-items: flex-end; flex-wrap: wrap; }
+.form-group { display: flex; flex-direction: column; gap: 6px; }
+.form-label { font-size: 12px; color: var(--text-dim); }
+.form-input {
+  background: var(--bg3); border: 1px solid var(--border);
+  color: var(--text); padding: 9px 14px; border-radius: 2px;
+  font-size: 14px; font-family: 'Noto Sans KR', sans-serif;
+  outline: none; transition: border-color 0.15s;
+}
+.form-input:focus { border-color: var(--gold-dim); }
+.form-input::placeholder { color: var(--text-dim); }
+
+/* Team config */
+.teams-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 10px; }
+.team-input-card {
+  background: var(--bg3); border: 1px solid var(--border);
+  border-radius: 3px; padding: 12px 14px;
+  display: flex; flex-direction: column; gap: 8px;
+}
+.team-color-row { display: flex; gap: 8px; align-items: center; }
+.color-dot {
+  width: 14px; height: 14px; border-radius: 50%;
+  border: 2px solid rgba(255,255,255,0.2); cursor: pointer;
+  transition: transform 0.1s;
+}
+.color-dot:hover { transform: scale(1.2); }
+.color-dot.selected { border-color: #fff; transform: scale(1.15); }
+.team-pts-row { display: flex; gap: 8px; align-items: center; }
+
+/* Player table */
+.player-table-wrap { overflow-x: auto; }
+.player-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.player-table th {
+  text-align: left; padding: 8px 12px;
+  font-size: 10px; letter-spacing: 2px; color: var(--text-dim);
+  text-transform: uppercase; font-family: 'Rajdhani', sans-serif;
+  border-bottom: 1px solid var(--border);
+}
+.player-table td {
+  padding: 8px 12px;
+  border-bottom: 1px solid rgba(201,168,76,0.07);
+  vertical-align: middle;
+}
+.player-table tr:hover td { background: rgba(201,168,76,0.04); }
+.player-table tr.sold td { opacity: 0.4; }
+.score-badge {
+  display: inline-block; padding: 2px 10px;
+  border-radius: 2px; font-weight: 700; font-size: 13px;
+  font-family: 'Rajdhani', sans-serif;
+}
+.score-badge.high { background: rgba(201,168,76,0.15); color: var(--gold-light); }
+.score-badge.mid { background: rgba(76,184,122,0.12); color: #6DE08A; }
+.score-badge.low { background: rgba(255,255,255,0.07); color: var(--text-dim); }
+.add-player-row td { padding: 10px 12px; }
+.add-player-row input { width: 100%; }
+
+/* ===== AUCTION SCREEN ===== */
+#auction-screen { flex-direction: column; }
+.auction-main { display: flex; flex: 1; gap: 0; }
+
+/* CENTER STAGE */
+.center-stage {
+  flex: 1; display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  padding: 40px 32px;
+  position: relative;
+}
+.center-stage::before {
+  content: '';
+  position: absolute; top: 0; left: 50%; transform: translateX(-50%);
+  width: 1px; height: 60px; background: linear-gradient(to bottom, var(--gold-dim), transparent);
+}
+
+.no-auction {
+  text-align: center; color: var(--text-dim);
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 22px; letter-spacing: 4px;
+}
+
+/* Player spotlight card */
+.spotlight {
+  width: 100%; max-width: 520px;
+  animation: spotlightIn 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+@keyframes spotlightIn {
+  from { opacity: 0; transform: translateY(20px) scale(0.97); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+.spotlight-glow {
+  position: absolute; top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  width: 400px; height: 400px; border-radius: 50%;
+  background: radial-gradient(circle, rgba(201,168,76,0.06) 0%, transparent 70%);
+  pointer-events: none;
+}
+.player-card {
+  background: var(--bg2);
+  border: 1px solid var(--border-bright);
+  border-radius: 4px;
+  overflow: hidden;
+  position: relative;
+}
+.player-card-top {
+  padding: 28px 28px 20px;
+  background: linear-gradient(160deg, var(--bg3) 0%, var(--bg2) 100%);
+  border-bottom: 1px solid var(--border);
+  display: flex; gap: 20px; align-items: center;
+}
+.player-avatar {
+  width: 72px; height: 72px; border-radius: 50%;
+  border: 2px solid var(--border-bright);
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'Bebas Neue', sans-serif; font-size: 28px; color: var(--gold);
+  background: var(--bg3); flex-shrink: 0; position: relative;
+}
+.player-avatar::after {
+  content: ''; position: absolute; inset: -4px;
+  border-radius: 50%; border: 1px solid rgba(201,168,76,0.15);
+}
+.player-meta { flex: 1; }
+.player-name-display {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 36px; letter-spacing: 3px; color: #fff;
+  line-height: 1;
+}
+.player-role-display { font-size: 12px; color: var(--text-dim); margin-top: 4px; letter-spacing: 1px; }
+.player-score-big {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 52px; color: var(--gold); line-height: 1;
+}
+.player-score-label { font-size: 10px; letter-spacing: 2px; color: var(--text-dim); text-transform: uppercase; }
+
+.player-stats { padding: 16px 28px; display: flex; gap: 0; }
+.stat-col { flex: 1; text-align: center; padding: 8px; border-right: 1px solid var(--border); }
+.stat-col:last-child { border-right: none; }
+.stat-val { font-family: 'Rajdhani', sans-serif; font-size: 22px; font-weight: 700; color: var(--text); }
+.stat-key { font-size: 10px; letter-spacing: 1.5px; color: var(--text-dim); text-transform: uppercase; margin-top: 2px; }
+
+/* Score bar */
+.score-bar-wrap { padding: 0 28px 20px; }
+.score-bar-track { height: 4px; background: rgba(255,255,255,0.07); border-radius: 2px; overflow: hidden; }
+.score-bar-fill {
+  height: 100%; border-radius: 2px;
+  background: linear-gradient(90deg, var(--gold-dim), var(--gold-light));
+  transition: width 0.5s ease;
+}
+
+/* BID SECTION */
+.bid-section { padding: 20px 28px 24px; background: var(--bg3); }
+.current-bid-display {
+  display: flex; justify-content: space-between; align-items: flex-end;
+  margin-bottom: 16px;
+}
+.bid-left {}
+.bid-label-sm { font-size: 10px; letter-spacing: 2px; color: var(--text-dim); text-transform: uppercase; margin-bottom: 4px; }
+.bid-amount-big {
+  font-family: 'Bebas Neue', sans-serif; font-size: 48px; color: var(--gold-light);
+  line-height: 1;
+}
+.bid-by-text { font-size: 12px; color: var(--text-dim); margin-top: 4px; }
+.bid-by-text span { color: var(--text); font-weight: 500; }
+.admin-bid-controls { display: flex; flex-direction: column; gap: 8px; align-items: flex-end; }
+.bid-input-row { display: flex; gap: 8px; }
+.bid-input-field {
+  width: 120px; padding: 8px 12px; font-size: 15px;
+  background: var(--bg2); border: 1px solid var(--border);
+  color: var(--text); border-radius: 2px; font-family: 'Noto Sans KR', sans-serif;
+  outline: none; text-align: right;
+}
+.bid-input-field:focus { border-color: var(--gold-dim); }
+
+/* History */
+.bid-history { padding: 0 28px 16px; }
+.bid-hist-title { font-size: 10px; letter-spacing: 2px; color: var(--text-dim); text-transform: uppercase; margin-bottom: 8px; }
+.bid-hist-list { display: flex; flex-direction: column; gap: 4px; max-height: 96px; overflow: hidden; }
+.bid-hist-item {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 5px 10px; border-radius: 2px;
+  font-size: 12px; animation: bidIn 0.2s ease;
+}
+@keyframes bidIn { from { opacity:0; transform: translateX(-8px); } to { opacity:1; transform: none; } }
+.bid-hist-item:first-child { background: rgba(201,168,76,0.1); }
+.bid-hist-team { font-weight: 500; }
+.bid-hist-amount { font-family: 'Rajdhani', sans-serif; font-size: 14px; font-weight: 700; color: var(--gold); }
+
+/* ===== SIDEBARS ===== */
+.sidebar {
+  width: 260px; background: var(--bg2);
+  border-left: 1px solid var(--border);
+  display: flex; flex-direction: column;
+  flex-shrink: 0;
+}
+.sidebar-left { border-left: none; border-right: 1px solid var(--border); }
+.sidebar-section { padding: 20px; border-bottom: 1px solid var(--border); }
+.sidebar-title {
+  font-size: 10px; letter-spacing: 3px; color: var(--gold-dim);
+  text-transform: uppercase; font-family: 'Rajdhani', sans-serif;
+  margin-bottom: 14px;
+}
+
+/* Teams panel */
+.team-card {
+  background: var(--bg3); border: 1px solid var(--border);
+  border-radius: 3px; padding: 12px 14px;
+  margin-bottom: 8px; cursor: pointer; transition: all 0.15s;
+  position: relative; overflow: hidden;
+}
+.team-card:last-child { margin-bottom: 0; }
+.team-card::before {
+  content: ''; position: absolute; left: 0; top: 0; bottom: 0;
+  width: 3px;
+}
+.team-card:hover { border-color: var(--border-bright); }
+.team-card.bidding { border-color: var(--gold-dim); background: rgba(201,168,76,0.06); }
+.team-card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+.team-card-name { font-size: 14px; font-weight: 500; }
+.team-card-pts { font-family: 'Rajdhani', sans-serif; font-size: 18px; font-weight: 700; color: var(--gold); }
+.pts-bar-track { height: 3px; background: rgba(255,255,255,0.07); border-radius: 2px; overflow: hidden; }
+.pts-bar-fill { height: 100%; border-radius: 2px; transition: width 0.4s ease; }
+.team-members { margin-top: 8px; display: flex; flex-wrap: wrap; gap: 4px; }
+.team-member-chip {
+  font-size: 10px; padding: 2px 7px; border-radius: 2px;
+  background: rgba(255,255,255,0.06); color: var(--text-dim);
+}
+
+/* Queue */
+.queue-list { display: flex; flex-direction: column; gap: 6px; }
+.queue-item {
+  display: flex; align-items: center; gap: 10px;
+  padding: 8px 10px; border-radius: 2px;
+  background: var(--bg3); border: 1px solid var(--border);
+  cursor: pointer; transition: all 0.15s;
+}
+.queue-item:hover { border-color: var(--gold-dim); }
+.queue-item.current { border-color: var(--gold); background: rgba(201,168,76,0.08); }
+.queue-item.sold { opacity: 0.35; cursor: default; }
+.queue-num { font-size: 11px; color: var(--text-dim); width: 18px; flex-shrink: 0; font-family: 'Rajdhani', sans-serif; }
+.queue-name { flex: 1; font-size: 13px; }
+.queue-score-badge {
+  font-family: 'Rajdhani', sans-serif; font-size: 13px; font-weight: 700;
+  color: var(--gold); background: rgba(201,168,76,0.1);
+  padding: 1px 8px; border-radius: 2px;
+}
+.queue-sold-tag {
+  font-size: 10px; padding: 2px 7px; border-radius: 2px;
+  background: rgba(76,184,122,0.15); color: #6DE08A; letter-spacing: 1px;
+}
+
+/* Admin overlay */
+.admin-panel {
+  position: fixed; bottom: 24px; right: 24px;
+  background: var(--bg2); border: 1px solid var(--border-bright);
+  border-radius: 4px; padding: 16px 20px; z-index: 200;
+  min-width: 220px; box-shadow: 0 8px 40px rgba(0,0,0,0.6);
+  display: none;
+}
+.admin-panel.visible { display: block; animation: panelIn 0.2s ease; }
+@keyframes panelIn { from { opacity:0; transform: translateY(10px); } to { opacity:1; transform:none; } }
+.admin-panel-title { font-size: 11px; letter-spacing: 2px; color: var(--text-dim); text-transform: uppercase; margin-bottom: 12px; }
+.admin-btn-grid { display: flex; flex-direction: column; gap: 8px; }
+
+/* Toast */
+.toast {
+  position: fixed; top: 72px; left: 50%; transform: translateX(-50%) translateY(-8px);
+  background: var(--bg2); border: 1px solid var(--border-bright);
+  color: var(--text); padding: 10px 20px; border-radius: 3px;
+  font-size: 13px; opacity: 0; pointer-events: none;
+  transition: all 0.25s; z-index: 999;
+}
+.toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+/* Sold overlay */
+.sold-overlay {
+  position: fixed; inset: 0; z-index: 500; pointer-events: none;
+  display: flex; align-items: center; justify-content: center;
+  opacity: 0; transition: opacity 0.3s;
+}
+.sold-overlay.show { opacity: 1; }
+.sold-overlay::before {
+  content: ''; position: absolute; inset: 0;
+  background: rgba(0,0,0,0.7);
+}
+.sold-banner {
+  position: relative; text-align: center;
+  animation: soldBounce 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+@keyframes soldBounce {
+  from { transform: scale(0.5); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+.sold-text {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 96px; letter-spacing: 10px;
+  color: var(--gold); display: block; line-height: 1;
+  text-shadow: 0 0 60px rgba(201,168,76,0.5);
+}
+.sold-info { font-size: 18px; color: var(--text); margin-top: 8px; letter-spacing: 2px; }
+
+/* Result table */
+#result-screen { align-items: center; justify-content: center; padding: 60px 24px; }
+.result-wrap { width: 100%; max-width: 900px; }
+.result-title {
+  font-family: 'Bebas Neue', sans-serif; font-size: 48px; letter-spacing: 8px;
+  color: var(--gold); text-align: center; margin-bottom: 32px;
+}
+.result-teams-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 16px; }
+.result-team-card {
+  background: var(--bg2); border: 1px solid var(--border);
+  border-radius: 4px; overflow: hidden;
+}
+.result-team-header {
+  padding: 14px 16px; border-bottom: 1px solid var(--border);
+  background: var(--bg3);
+}
+.result-team-name { font-size: 16px; font-weight: 700; }
+.result-team-spent { font-size: 12px; color: var(--text-dim); margin-top: 2px; }
+.result-players { padding: 12px 16px; display: flex; flex-direction: column; gap: 6px; }
+.result-player-row { display: flex; justify-content: space-between; align-items: center; font-size: 13px; }
+.result-player-pts { font-family: 'Rajdhani', sans-serif; font-weight: 700; color: var(--gold); }
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: var(--bg); }
+::-webkit-scrollbar-thumb { background: var(--border-bright); border-radius: 2px; }
+
+/* Utility */
+.hidden { display: none !important; }
+.flex { display: flex; }
+.gap-8 { gap: 8px; }
+.mt-8 { margin-top: 8px; }
+
+/* Admin toggle btn */
+.admin-toggle {
+  position: fixed; bottom: 24px; left: 24px; z-index: 201;
+}
+</style>
+</head>
+<body>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<!-- SOLD OVERLAY -->
+<div class="sold-overlay" id="sold-overlay">
+  <div class="sold-banner">
+    <span class="sold-text">SOLD!</span>
+    <div class="sold-info" id="sold-info"></div>
+  </div>
+</div>
+
+<!-- ==================== SETUP SCREEN ==================== -->
+<div class="screen active" id="setup-screen">
+  <div class="setup-card">
+    <div class="setup-header">
+      <div class="setup-title">DRAFT ARENA</div>
+      <div class="setup-sub">경매 설정 — 팀과 선수를 등록하고 경매를 시작하세요</div>
+    </div>
+    <div class="setup-body">
+
+      <!-- TEAMS -->
+      <div>
+        <div class="setup-section-title">팀 설정</div>
+        <div class="form-row" style="margin-bottom:14px;">
+          <div class="form-group">
+            <label class="form-label">팀 수</label>
+            <input class="form-input" type="number" id="team-count-input" value="4" min="2" max="12" style="width:80px;">
+          </div>
+          <div class="form-group">
+            <label class="form-label">팀당 초기 포인트</label>
+            <input class="form-input" type="number" id="init-pts-input" value="1000" min="100" step="100" style="width:120px;">
+          </div>
+          <button class="btn btn-outline btn-sm" onclick="generateTeams()">팀 생성</button>
+        </div>
+        <div class="teams-grid" id="teams-grid"></div>
+      </div>
+
+      <!-- PLAYERS -->
+      <div>
+        <div class="setup-section-title">선수 등록</div>
+        <!-- Excel upload area -->
+        <div id="xlsx-drop" style="
+          border: 1.5px dashed var(--border-bright); border-radius: 4px;
+          padding: 20px 24px; margin-bottom: 14px; text-align: center;
+          cursor: pointer; transition: background 0.15s; position: relative;
+        " onclick="document.getElementById('xlsx-file-input').click()"
+           ondragover="event.preventDefault();this.style.background='rgba(201,168,76,0.07)'"
+           ondragleave="this.style.background=''"
+           ondrop="handleXlsxDrop(event)">
+          <input type="file" id="xlsx-file-input" accept=".xlsx,.xls,.csv" style="display:none;" onchange="handleXlsxFile(this.files[0])">
+          <div style="font-size:22px;margin-bottom:6px;opacity:0.5;">📊</div>
+          <div style="font-size:13px;color:var(--text-dim);">엑셀(.xlsx) 또는 CSV 파일을 드래그하거나 클릭해서 업로드</div>
+          <div style="font-size:11px;color:var(--text-dim);margin-top:4px;">열 순서: <span style="color:var(--gold);">닉네임 | 포지션 | 점수 | 메모</span> (1행은 헤더로 자동 스킵)</div>
+        </div>
+        <div class="player-table-wrap">
+          <table class="player-table">
+            <thead>
+              <tr>
+                <th style="width:40px;">#</th>
+                <th>닉네임</th>
+                <th>포지션</th>
+                <th style="width:80px;">점수</th>
+                <th style="width:160px;">메모</th>
+                <th style="width:60px;"></th>
+              </tr>
+            </thead>
+            <tbody id="player-tbody"></tbody>
+            <tfoot>
+              <tr class="add-player-row">
+                <td></td>
+                <td><input class="form-input" id="new-nick" placeholder="닉네임" style="width:100%;"></td>
+                <td><input class="form-input" id="new-pos" placeholder="포지션" style="width:100%;"></td>
+                <td><input class="form-input" id="new-score" type="number" placeholder="점수" style="width:100%;"></td>
+                <td><input class="form-input" id="new-memo" placeholder="메모" style="width:100%;"></td>
+                <td><button class="btn btn-gold btn-sm" onclick="addPlayer()">추가</button></td>
+              </tr>
+            </tfoot>
+          </table>
+        </div>
+      </div>
+
+      <div style="display:flex;justify-content:space-between;align-items:center;">
+        <button class="btn btn-danger" onclick="fullReset()" style="font-size:13px;">
+          전체 초기화
+        </button>
+        <button class="btn btn-gold" onclick="startAuction()" style="padding:12px 36px;font-size:15px;letter-spacing:1px;">
+          경매 시작 →
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== AUCTION SCREEN ==================== -->
+<div class="screen" id="auction-screen">
+  <div class="topbar">
+    <div class="topbar-logo">DRAFT ARENA</div>
+    <div class="topbar-info">
+      <span id="topbar-round">라운드 —</span>
+      <span id="topbar-remain">남은 선수 —</span>
+    </div>
+    <div class="topbar-actions">
+      <button class="btn btn-outline btn-sm" onclick="toggleAdmin()">관리자</button>
+      <button class="btn btn-ghost btn-sm" onclick="goResult()">결과 보기</button>
+    </div>
+  </div>
+
+  <div class="auction-main">
+    <!-- LEFT: TEAMS -->
+    <div class="sidebar sidebar-left">
+      <div class="sidebar-section" style="flex:1;overflow-y:auto;">
+        <div class="sidebar-title">팀 현황</div>
+        <div id="teams-panel"></div>
+      </div>
+    </div>
+
+    <!-- CENTER -->
+    <div class="center-stage">
+      <div class="spotlight-glow"></div>
+
+      <div id="no-auction-msg" class="no-auction">
+        선수를 선택해<br>경매를 시작하세요
+      </div>
+
+      <div id="spotlight" class="spotlight hidden">
+        <div class="player-card">
+          <div class="player-card-top">
+            <div class="player-avatar" id="sp-avatar">?</div>
+            <div class="player-meta">
+              <div class="player-name-display" id="sp-name">—</div>
+              <div class="player-role-display" id="sp-role">—</div>
+            </div>
+            <div style="text-align:right;">
+              <div class="player-score-big" id="sp-score">—</div>
+              <div class="player-score-label">SCORE</div>
+            </div>
+          </div>
+
+          <div class="player-stats" id="sp-stats"></div>
+
+          <div class="score-bar-wrap">
+            <div class="score-bar-track"><div class="score-bar-fill" id="sp-bar" style="width:0%"></div></div>
+          </div>
+
+          <div class="bid-history">
+            <div class="bid-hist-title">입찰 내역</div>
+            <div class="bid-hist-list" id="bid-hist-list">
+              <div style="font-size:12px;color:var(--text-dim);padding:4px 10px;">입찰 내역 없음</div>
+            </div>
+          </div>
+
+          <div class="bid-section">
+            <div class="current-bid-display">
+              <div class="bid-left">
+                <div class="bid-label-sm">현재 최고 입찰</div>
+                <div class="bid-amount-big" id="bid-amount">—</div>
+                <div class="bid-by-text">입찰팀: <span id="bid-by-team">—</span></div>
+              </div>
+              <div class="admin-bid-controls" id="admin-bid-controls">
+                <div class="bid-input-row">
+                  <input class="bid-input-field" type="number" id="bid-value-input" placeholder="포인트">
+                  <div>
+                    <select class="form-input" id="bid-team-select" style="height:38px;font-size:13px;"></select>
+                  </div>
+                </div>
+                <div style="display:flex;gap:8px;">
+                  <button class="btn btn-outline btn-sm" onclick="placeBid()">입찰 등록</button>
+                  <button class="btn btn-success btn-sm" onclick="confirmSold()">낙찰</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- RIGHT: QUEUE -->
+    <div class="sidebar">
+      <div class="sidebar-section" style="flex:1;overflow-y:auto;">
+        <div class="sidebar-title">경매 대기열</div>
+        <div class="queue-list" id="queue-list"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== RESULT SCREEN ==================== -->
+<div class="screen" id="result-screen">
+  <div class="result-wrap">
+    <div class="result-title">DRAFT RESULT</div>
+    <div class="result-teams-grid" id="result-grid"></div>
+    <div style="text-align:center;margin-top:32px;">
+      <button class="btn btn-outline" onclick="backToAuction()">← 경매로 돌아가기</button>
+    </div>
+  </div>
+</div>
+
+<!-- ADMIN PANEL -->
+<div class="admin-panel" id="admin-panel">
+  <div class="admin-panel-title">관리자 패널</div>
+  <div class="admin-btn-grid">
+    <button class="btn btn-outline btn-sm" onclick="openPlayerModal()">선수 추가/수정</button>
+    <button class="btn btn-ghost btn-sm" onclick="resetCurrentBid()">현재 입찰 초기화</button>
+    <button class="btn btn-danger btn-sm" onclick="cancelAuction()">현재 경매 취소</button>
+  </div>
+</div>
+
+<script>
+// ========== STATE ==========
+let state = {
+  teams: [],
+  players: [],
+  currentPlayer: null,
+  currentBids: [],
+  round: 0,
+  soldLog: []
+};
+
+const COLORS = ['#C94C4C','#4C8BC9','#4CB87A','#C9A84C','#8B4CC9','#C94C8B','#4CC9C9','#C97A4C'];
+const COLOR_NAMES = ['레드','블루','그린','골드','퍼플','핑크','시안','오렌지'];
+
+// ========== SETUP ==========
+function generateTeams() {
+  const n = parseInt(document.getElementById('team-count-input').value) || 4;
+  const pts = parseInt(document.getElementById('init-pts-input').value) || 1000;
+  const grid = document.getElementById('teams-grid');
+  grid.innerHTML = '';
+  state.teams = [];
+  for (let i = 0; i < n; i++) {
+    const color = COLORS[i % COLORS.length];
+    state.teams.push({ name: COLOR_NAMES[i % COLOR_NAMES.length] + ' 팀', color, pts, initPts: pts, members: [] });
+    grid.innerHTML += `
+      <div class="team-input-card">
+        <div class="form-group" style="margin-bottom:0;">
+          <input class="form-input" placeholder="팀 이름" value="${COLOR_NAMES[i % COLOR_NAMES.length]} 팀" oninput="state.teams[${i}].name=this.value" style="font-size:13px;">
+        </div>
+        <div class="team-color-row" style="margin-top:6px;">
+          ${COLORS.map((c,ci) => `<div class="color-dot ${ci===i%COLORS.length?'selected':''}" style="background:${c};" onclick="setTeamColor(${i},${ci},this)"></div>`).join('')}
+        </div>
+      </div>`;
+  }
+}
+function setTeamColor(ti, ci, el) {
+  state.teams[ti].color = COLORS[ci];
+  el.closest('.team-input-card').querySelectorAll('.color-dot').forEach(d=>d.classList.remove('selected'));
+  el.classList.add('selected');
+}
+
+// Player table
+let playerList = [];
+function renderPlayerTable() {
+  const tbody = document.getElementById('player-tbody');
+  tbody.innerHTML = playerList.map((p,i) => `
+    <tr>
+      <td style="color:var(--text-dim);font-family:'Rajdhani',sans-serif;">${i+1}</td>
+      <td><input class="form-input" value="${p.nick}" oninput="playerList[${i}].nick=this.value" style="width:100%;font-size:13px;"></td>
+      <td><input class="form-input" value="${p.pos}" oninput="playerList[${i}].pos=this.value" style="width:100%;font-size:13px;"></td>
+      <td><input class="form-input" type="number" value="${p.score}" oninput="playerList[${i}].score=+this.value" style="width:100%;font-size:13px;"></td>
+      <td><input class="form-input" value="${p.memo||''}" oninput="playerList[${i}].memo=this.value" style="width:100%;font-size:13px;"></td>
+      <td><button class="btn btn-ghost btn-sm" onclick="removePlayer(${i})" style="color:var(--red);border-color:var(--red);">삭제</button></td>
+    </tr>`).join('');
+}
+function addPlayer() {
+  const nick = document.getElementById('new-nick').value.trim();
+  const pos = document.getElementById('new-pos').value.trim();
+  const score = parseInt(document.getElementById('new-score').value)||50;
+  const memo = document.getElementById('new-memo').value.trim();
+  if (!nick) { showToast('닉네임을 입력하세요'); return; }
+  playerList.push({ nick, pos, score, memo, sold: false, soldTo: null, soldPts: 0 });
+  renderPlayerTable();
+  ['new-nick','new-pos','new-score','new-memo'].forEach(id=>document.getElementById(id).value='');
+}
+function removePlayer(i) { playerList.splice(i,1); renderPlayerTable(); }
+
+function startAuction() {
+  if (!state.teams.length) { showToast('팀을 먼저 생성하세요'); return; }
+  if (!playerList.length) { showToast('선수를 등록하세요'); return; }
+  state.players = playerList.map(p=>({...p}));
+  state.round = 0;
+  state.soldLog = [];
+  // Sync teams pts
+  state.teams.forEach(t=>{ t.pts=t.initPts; t.members=[]; });
+  showScreen('auction-screen');
+  renderTeamsPanel();
+  renderQueue();
+  updateTopbar();
+}
+
+// ========== AUCTION SCREEN ==========
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+function updateTopbar() {
+  const remain = state.players.filter(p=>!p.sold).length;
+  document.getElementById('topbar-round').textContent = `라운드 ${state.round}`;
+  document.getElementById('topbar-remain').textContent = `남은 선수 ${remain}명`;
+}
+
+function renderTeamsPanel() {
+  const maxPts = Math.max(...state.teams.map(t=>t.initPts));
+  document.getElementById('teams-panel').innerHTML = state.teams.map((t,i) => `
+    <div class="team-card ${state.currentBids.length && state.currentBids[0].team===i ? 'bidding':''}" style="--tc:${t.color}">
+      <div style="position:absolute;left:0;top:0;bottom:0;width:3px;background:${t.color};border-radius:3px 0 0 3px;"></div>
+      <div class="team-card-header">
+        <span class="team-card-name" style="color:${t.color};">${t.name}</span>
+        <span class="team-card-pts">${t.pts}</span>
+      </div>
+      <div class="pts-bar-track">
+        <div class="pts-bar-fill" style="width:${(t.pts/maxPts*100).toFixed(1)}%;background:${t.color};opacity:0.7;"></div>
+      </div>
+      ${t.members.length ? `<div class="team-members">${t.members.map(m=>`<span class="team-member-chip">${m.nick}</span>`).join('')}</div>` : ''}
+    </div>`).join('');
+}
+
+function renderQueue() {
+  const list = document.getElementById('queue-list');
+  let idx = 0;
+  list.innerHTML = state.players.map((p,i) => {
+    if (!p.sold) idx++;
+    const isCurrent = state.currentPlayer && state.currentPlayer === p;
+    return `
+    <div class="queue-item ${isCurrent?'current':''} ${p.sold?'sold':''}" onclick="${p.sold?'':'selectPlayer('+i+')'}">
+      <div class="queue-num">${p.sold ? '✓' : idx}</div>
+      <div class="queue-name">${p.nick}${p.pos?` <span style="font-size:10px;color:var(--text-dim);">${p.pos}</span>`:''}</div>
+      ${p.sold
+        ? `<span class="queue-sold-tag">낙찰</span>`
+        : `<span class="queue-score-badge">${p.score}</span>`}
+    </div>`;
+  }).join('');
+}
+
+function selectPlayer(i) {
+  const p = state.players[i];
+  if (p.sold) return;
+  state.currentPlayer = p;
+  state.currentBids = [];
+  state.round++;
+  renderSpotlight(p);
+  renderQueue();
+  updateTopbar();
+  renderBidHistory();
+  document.getElementById('bid-amount').textContent = '—';
+  document.getElementById('bid-by-team').textContent = '—';
+  renderTeamSelect();
+  hideAdminPanel();
+}
+
+function renderSpotlight(p) {
+  document.getElementById('no-auction-msg').classList.add('hidden');
+  const sp = document.getElementById('spotlight');
+  sp.classList.remove('hidden');
+  const initials = p.nick.slice(0,2);
+  document.getElementById('sp-avatar').textContent = initials;
+  document.getElementById('sp-name').textContent = p.nick;
+  document.getElementById('sp-role').textContent = p.pos || '포지션 미정';
+  document.getElementById('sp-score').textContent = p.score;
+  document.getElementById('sp-bar').style.width = Math.min(p.score, 100) + '%';
+  // Stats
+  const statsEl = document.getElementById('sp-stats');
+  if (p.memo) {
+    statsEl.innerHTML = `<div style="padding:12px 28px 0;font-size:12px;color:var(--text-dim);width:100%;">${p.memo}</div>`;
+  } else {
+    statsEl.innerHTML = '';
+  }
+}
+
+function renderTeamSelect() {
+  const sel = document.getElementById('bid-team-select');
+  sel.innerHTML = state.teams.map((t,i)=>`<option value="${i}">${t.name}</option>`).join('');
+}
+
+function placeBid() {
+  if (!state.currentPlayer) { showToast('선수를 먼저 선택하세요'); return; }
+  const pts = parseInt(document.getElementById('bid-value-input').value);
+  const ti = parseInt(document.getElementById('bid-team-select').value);
+  if (!pts || pts <= 0) { showToast('포인트를 입력하세요'); return; }
+  const team = state.teams[ti];
+  if (pts > team.pts) { showToast(`${team.name}의 포인트가 부족합니다 (보유: ${team.pts}pt)`); return; }
+  // Check if higher than current
+  if (state.currentBids.length && pts <= state.currentBids[0].pts) {
+    showToast('현재 최고 입찰보다 높아야 합니다'); return;
+  }
+  state.currentBids.unshift({ team: ti, teamName: team.name, teamColor: team.color, pts });
+  document.getElementById('bid-amount').textContent = pts + ' pt';
+  document.getElementById('bid-by-team').textContent = team.name;
+  document.getElementById('bid-by-team').style.color = team.color;
+  renderBidHistory();
+  renderTeamsPanel();
+  document.getElementById('bid-value-input').value = '';
+  showToast(`${team.name} — ${pts}pt 입찰 등록`);
+}
+
+function renderBidHistory() {
+  const list = document.getElementById('bid-hist-list');
+  if (!state.currentBids.length) {
+    list.innerHTML = '<div style="font-size:12px;color:var(--text-dim);padding:4px 10px;">입찰 내역 없음</div>';
+    return;
+  }
+  list.innerHTML = state.currentBids.map((b,i)=>`
+    <div class="bid-hist-item">
+      <span class="bid-hist-team" style="color:${b.teamColor};">${b.teamName}</span>
+      <span class="bid-hist-amount">${b.pts} pt</span>
+    </div>`).join('');
+}
+
+function confirmSold() {
+  if (!state.currentPlayer) { showToast('선수를 먼저 선택하세요'); return; }
+  if (!state.currentBids.length) { showToast('입찰 내역이 없습니다'); return; }
+  const top = state.currentBids[0];
+  const team = state.teams[top.team];
+  const player = state.currentPlayer;
+  team.pts -= top.pts;
+  team.members.push(player);
+  player.sold = true;
+  player.soldTo = top.team;
+  player.soldPts = top.pts;
+  state.soldLog.push({ player: player.nick, team: team.name, pts: top.pts });
+  // Show sold overlay
+  const overlay = document.getElementById('sold-overlay');
+  document.getElementById('sold-info').textContent = `${player.nick} → ${team.name} (${top.pts}pt)`;
+  overlay.classList.add('show');
+  setTimeout(()=>{ overlay.classList.remove('show'); }, 2000);
+  state.currentPlayer = null;
+  state.currentBids = [];
+  document.getElementById('spotlight').classList.add('hidden');
+  document.getElementById('no-auction-msg').classList.remove('hidden');
+  renderTeamsPanel();
+  renderQueue();
+  updateTopbar();
+  hideAdminPanel();
+}
+
+function resetCurrentBid() {
+  state.currentBids = [];
+  document.getElementById('bid-amount').textContent = '—';
+  document.getElementById('bid-by-team').textContent = '—';
+  renderBidHistory();
+  renderTeamsPanel();
+  showToast('입찰 내역을 초기화했습니다');
+}
+
+function cancelAuction() {
+  state.currentPlayer = null;
+  state.currentBids = [];
+  document.getElementById('spotlight').classList.add('hidden');
+  document.getElementById('no-auction-msg').classList.remove('hidden');
+  renderQueue();
+  hideAdminPanel();
+  showToast('경매를 취소했습니다');
+}
+
+function openPlayerModal() {
+  showScreen('setup-screen');
+  hideAdminPanel();
+}
+
+// Admin panel toggle
+function toggleAdmin() {
+  const p = document.getElementById('admin-panel');
+  p.classList.toggle('visible');
+}
+function hideAdminPanel() {
+  document.getElementById('admin-panel').classList.remove('visible');
+}
+
+// ========== RESULT ==========
+function goResult() {
+  showScreen('result-screen');
+  const grid = document.getElementById('result-grid');
+  grid.innerHTML = state.teams.map(t => `
+    <div class="result-team-card">
+      <div class="result-team-header" style="border-top:3px solid ${t.color};">
+        <div class="result-team-name" style="color:${t.color};">${t.name}</div>
+        <div class="result-team-spent">사용: ${t.initPts-t.pts}pt / 잔여: ${t.pts}pt</div>
+      </div>
+      <div class="result-players">
+        ${t.members.length
+          ? t.members.map(m=>`
+            <div class="result-player-row">
+              <span>${m.nick} <span style="font-size:11px;color:var(--text-dim);">${m.pos||''}</span></span>
+              <span class="result-player-pts">${m.soldPts}pt</span>
+            </div>`).join('')
+          : '<div style="font-size:12px;color:var(--text-dim);">낙찰 없음</div>'}
+      </div>
+    </div>`).join('');
+}
+function backToAuction() { showScreen('auction-screen'); }
+
+// ========== UTIL ==========
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'), 2200);
+}
+
+// ========== EXCEL UPLOAD ==========
+function handleXlsxDrop(e) {
+  e.preventDefault();
+  document.getElementById('xlsx-drop').style.background = '';
+  const file = e.dataTransfer.files[0];
+  if (file) handleXlsxFile(file);
+}
+
+function handleXlsxFile(file) {
+  if (!file) return;
+  const ext = file.name.split('.').pop().toLowerCase();
+  if (ext === 'csv') { handleCSV(file); return; }
+  if (!window.XLSX) { showToast('라이브러리 로딩 중... 잠시 후 다시 시도하세요'); return; }
+  const reader = new FileReader();
+  reader.onload = e => {
+    try {
+      const wb = XLSX.read(e.target.result, { type: 'array' });
+      const ws = wb.Sheets[wb.SheetNames[0]];
+      const rows = XLSX.utils.sheet_to_json(ws, { header: 1, defval: '' });
+      importRows(rows);
+    } catch(err) { showToast('파일을 읽을 수 없습니다'); }
+  };
+  reader.readAsArrayBuffer(file);
+}
+
+function handleCSV(file) {
+  const reader = new FileReader();
+  reader.onload = e => {
+    const rows = e.target.result.split('\n').map(l => l.split(',').map(c => c.trim().replace(/^"|"$/g,'')));
+    importRows(rows);
+  };
+  reader.readAsText(file, 'UTF-8');
+}
+
+function importRows(rows) {
+  // Skip header row (first row)
+  const data = rows.slice(1).filter(r => r[0] && String(r[0]).trim());
+  if (!data.length) { showToast('선수 데이터가 없습니다'); return; }
+  let added = 0;
+  data.forEach(r => {
+    const nick = String(r[0]||'').trim();
+    if (!nick) return;
+    const pos  = String(r[1]||'').trim();
+    const score = parseInt(r[2]) || 50;
+    const memo = String(r[3]||'').trim();
+    playerList.push({ nick, pos, score, memo, sold: false, soldTo: null, soldPts: 0 });
+    added++;
+  });
+  renderPlayerTable();
+  showToast(`✓ 선수 ${added}명 불러오기 완료`);
+  document.getElementById('xlsx-file-input').value = '';
+}
+
+// ========== FULL RESET ==========
+function fullReset() {
+  if (!confirm('모든 선수·팀·경매 데이터를 초기화할까요?\n이 작업은 되돌릴 수 없습니다.')) return;
+  playerList = [];
+  state = { teams: [], players: [], currentPlayer: null, currentBids: [], round: 0, soldLog: [] };
+  renderPlayerTable();
+  generateTeams();
+  showToast('전체 초기화 완료');
+}
+
+// Init
+generateTeams();
+renderPlayerTable();
+</script>
+<!-- SheetJS for Excel parsing -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
+</body>
+</html>
