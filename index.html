@@ -813,16 +813,19 @@ function listenFirebase(){
   fbDB.ref('auction').on('value',snap=>{
     const d=snap.val(); if(!d)return;
 
-    // 초기화 감지
+    // 초기화 감지 - 5초 이내의 reset만 처리 (오래된 reset 필드 무시)
     if(d.reset && me.role !== 'admin'){
-      S={teams:[],players:[],curIdx:null,bids:[],round:0};
-      document.getElementById('spotlight').classList.add('hidden');
-      document.getElementById('no-auction').classList.remove('hidden');
-      document.getElementById('teams-panel').innerHTML='';
-      document.getElementById('queue-list').innerHTML='';
-      clearBidDisplay();
-      showToast('관리자가 경매를 초기화했습니다');
-      return;
+      const now = Date.now();
+      if(now - d.reset < 5000){
+        S={teams:[],players:[],curIdx:null,bids:[],round:0};
+        document.getElementById('spotlight').classList.add('hidden');
+        document.getElementById('no-auction').classList.remove('hidden');
+        document.getElementById('teams-panel').innerHTML='';
+        document.getElementById('queue-list').innerHTML='';
+        clearBidDisplay();
+        showToast('관리자가 경매를 초기화했습니다');
+        return;
+      }
     }
 
     // 팀장/관전자: teamInfo로 팀 전체 정보 먼저 세팅
@@ -912,9 +915,10 @@ function startAuction(){
   const fbOk = connectFb(FB_CONFIG);
   if(fbOk){
     fbSet('teams', S.teams.map(t=>({pts:t.pts,members:t.members})));
-    fbSet('teamInfo', S.teams); // 팀 전체 정보 (이름, 색상, 심볼 포함)
+    fbSet('teamInfo', S.teams);
     fbSet('players', S.players);
     fbSet('bids',[]);fbSet('curIdx',null);fbSet('round',0);
+    fbSet('reset', null); // 이전 reset 필드 제거
     showToast('🔥 Firebase 실시간 연결됨!');
   } else {
     document.getElementById('fb-txt').textContent='싱글 모드';showToast('싱글 모드로 시작');
