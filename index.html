@@ -7,424 +7,381 @@
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Noto+Sans+KR:wght@300;400;500;700&family=Rajdhani:wght@500;700&display=swap" rel="stylesheet">
 <style>
 :root {
-  --gold: #C9A84C; --gold-light: #F0D080; --gold-dim: #7A5F28;
-  --bg: #080A0F; --bg2: #0D1018; --bg3: #12161F; --bg4: #1A1F2E;
-  --border: rgba(201,168,76,0.2); --border-bright: rgba(201,168,76,0.6);
-  --text: #E8E0CC; --text-dim: #7A7060;
-  --red: #C94C4C; --green: #4CB87A; --blue: #4C8BC9; --purple: #8B4CC9;
+  --gold:#C9A84C; --gold-light:#F0D080; --gold-dim:#7A5F28;
+  --bg:#080A0F; --bg2:#0D1018; --bg3:#12161F;
+  --border:rgba(201,168,76,0.2); --border-bright:rgba(201,168,76,0.55);
+  --text:#E8E0CC; --text-dim:#7A7060;
+  --red:#C94C4C; --green:#4CB87A; --blue:#4C8BC9;
 }
-* { box-sizing: border-box; margin: 0; padding: 0; }
-html, body { width: 100%; min-height: 100vh; background: var(--bg); color: var(--text); font-family: 'Noto Sans KR', sans-serif; overflow-x: hidden; }
-body::before {
-  content: ''; position: fixed; inset: 0; pointer-events: none; z-index: 0;
-  background:
-    radial-gradient(ellipse 80% 50% at 50% -10%, rgba(201,168,76,0.07) 0%, transparent 60%),
-    repeating-linear-gradient(0deg, transparent, transparent 39px, rgba(201,168,76,0.03) 39px, rgba(201,168,76,0.03) 40px),
-    repeating-linear-gradient(90deg, transparent, transparent 39px, rgba(201,168,76,0.03) 39px, rgba(201,168,76,0.03) 40px);
-}
-.screen { display: none; position: relative; z-index: 1; min-height: 100vh; }
-.screen.active { display: flex; flex-direction: column; }
+*{box-sizing:border-box;margin:0;padding:0;}
+html,body{width:100%;min-height:100vh;background:var(--bg);color:var(--text);font-family:'Noto Sans KR',sans-serif;overflow-x:hidden;}
+body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
+  background:radial-gradient(ellipse 80% 50% at 50% -10%,rgba(201,168,76,0.07) 0%,transparent 60%),
+  repeating-linear-gradient(0deg,transparent,transparent 39px,rgba(201,168,76,0.03) 39px,rgba(201,168,76,0.03) 40px),
+  repeating-linear-gradient(90deg,transparent,transparent 39px,rgba(201,168,76,0.03) 39px,rgba(201,168,76,0.03) 40px);}
+.screen{display:none;position:relative;z-index:1;min-height:100vh;}
+.screen.active{display:flex;flex-direction:column;}
 
-/* ── TOPBAR ── */
-.topbar {
-  display: flex; align-items: center; justify-content: space-between;
-  padding: 0 24px; height: 56px; border-bottom: 1px solid var(--border);
-  background: rgba(8,10,15,0.95); backdrop-filter: blur(12px);
-  position: sticky; top: 0; z-index: 100;
-}
-.topbar-logo { font-family: 'Bebas Neue', sans-serif; font-size: 26px; letter-spacing: 4px; color: var(--gold); cursor: pointer; }
-.topbar-info { display: flex; gap: 20px; align-items: center; font-size: 12px; color: var(--text-dim); }
-.topbar-info span { color: var(--text); font-weight: 500; }
-.topbar-actions { display: flex; gap: 8px; }
+/* TOPBAR */
+.topbar{display:flex;align-items:center;justify-content:space-between;padding:0 24px;height:54px;
+  border-bottom:1px solid var(--border);background:rgba(8,10,15,0.95);backdrop-filter:blur(12px);
+  position:sticky;top:0;z-index:100;}
+.topbar-logo{font-family:'Bebas Neue',sans-serif;font-size:26px;letter-spacing:4px;color:var(--gold);}
+.topbar-mid{display:flex;gap:16px;align-items:center;font-size:12px;color:var(--text-dim);}
+.topbar-mid b{color:var(--text);font-weight:500;}
+.topbar-right{display:flex;gap:8px;align-items:center;}
+.role-badge{font-size:11px;padding:3px 10px;border-radius:2px;font-weight:500;}
+.role-badge.admin{background:rgba(201,168,76,0.15);color:var(--gold);border:1px solid var(--gold-dim);}
+.role-badge.captain{background:rgba(76,139,201,0.15);color:#7EB8F0;border:1px solid rgba(76,139,201,0.4);}
+.role-badge.spectator{background:rgba(255,255,255,0.05);color:var(--text-dim);border:1px solid rgba(255,255,255,0.1);}
+.fb-dot{width:7px;height:7px;border-radius:50%;background:var(--text-dim);display:inline-block;vertical-align:middle;}
+.fb-dot.on{background:var(--green);box-shadow:0 0 5px var(--green);animation:pulse 2s infinite;}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.5}}
 
-/* ── FIREBASE STATUS ── */
-.fb-status {
-  display: flex; align-items: center; gap: 6px;
-  font-size: 11px; color: var(--text-dim); padding: 4px 10px;
-  border: 1px solid var(--border); border-radius: 2px;
-}
-.fb-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--text-dim); }
-.fb-dot.connected { background: var(--green); box-shadow: 0 0 6px var(--green); animation: pulse 2s infinite; }
-.fb-dot.error { background: var(--red); }
-@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.5} }
+/* BUTTONS */
+.btn{padding:7px 18px;border-radius:2px;font-size:13px;font-weight:500;cursor:pointer;
+  transition:all 0.15s;font-family:'Noto Sans KR',sans-serif;letter-spacing:0.5px;border:none;}
+.btn-gold{background:var(--gold);color:#080A0F;}
+.btn-gold:hover{background:var(--gold-light);}
+.btn-outline{background:transparent;color:var(--gold);border:1px solid var(--border-bright);}
+.btn-outline:hover{background:rgba(201,168,76,0.1);}
+.btn-sm{padding:5px 12px;font-size:12px;}
+.btn-danger{background:var(--red);color:#fff;}
+.btn-danger:hover{filter:brightness(1.15);}
+.btn-success{background:var(--green);color:#080A0F;font-weight:700;}
+.btn-success:hover{filter:brightness(1.1);}
+.btn-ghost{background:rgba(255,255,255,0.05);color:var(--text);border:1px solid rgba(255,255,255,0.1);}
+.btn-ghost:hover{background:rgba(255,255,255,0.09);}
+.btn-blue{background:var(--blue);color:#fff;}
+.btn-blue:hover{filter:brightness(1.15);}
+.btn-block{width:100%;}
+.btn-warn{background:rgba(201,76,76,0.15);color:#F09090;border:1px solid rgba(201,76,76,0.4);}
+.btn-warn:hover{background:rgba(201,76,76,0.25);}
 
-/* ── BUTTONS ── */
-.btn {
-  padding: 7px 18px; border-radius: 2px; font-size: 13px; font-weight: 500;
-  cursor: pointer; transition: all 0.15s; font-family: 'Noto Sans KR', sans-serif;
-  letter-spacing: 0.5px; border: none;
-}
-.btn-gold { background: var(--gold); color: #080A0F; }
-.btn-gold:hover { background: var(--gold-light); }
-.btn-outline { background: transparent; color: var(--gold); border: 1px solid var(--border-bright); }
-.btn-outline:hover { background: rgba(201,168,76,0.1); }
-.btn-sm { padding: 5px 12px; font-size: 12px; }
-.btn-danger { background: var(--red); color: #fff; }
-.btn-danger:hover { filter: brightness(1.15); }
-.btn-success { background: var(--green); color: #080A0F; font-weight: 700; }
-.btn-success:hover { filter: brightness(1.1); }
-.btn-ghost { background: rgba(255,255,255,0.05); color: var(--text); border: 1px solid rgba(255,255,255,0.1); }
-.btn-ghost:hover { background: rgba(255,255,255,0.09); }
-.btn-blue { background: var(--blue); color: #fff; }
-.btn-blue:hover { filter: brightness(1.15); }
+/* FORM */
+.form-input{background:var(--bg3);border:1px solid var(--border);color:var(--text);
+  padding:9px 13px;border-radius:2px;font-size:13px;font-family:'Noto Sans KR',sans-serif;
+  outline:none;transition:border-color 0.15s;width:100%;}
+.form-input:focus{border-color:var(--gold-dim);}
+.form-input::placeholder{color:var(--text-dim);}
+.form-label{font-size:11px;color:var(--text-dim);margin-bottom:5px;display:block;}
+.form-group{display:flex;flex-direction:column;gap:4px;margin-bottom:12px;}
 
-/* ── SETUP SCREEN ── */
-#setup-screen { align-items: center; justify-content: flex-start; padding: 40px 24px 60px; }
-.setup-card { background: var(--bg2); border: 1px solid var(--border); border-radius: 4px; width: 100%; max-width: 900px; overflow: hidden; }
-.setup-header { padding: 28px 36px 20px; border-bottom: 1px solid var(--border); background: linear-gradient(135deg, var(--bg3), var(--bg2)); }
-.setup-title { font-family: 'Bebas Neue', sans-serif; font-size: 38px; letter-spacing: 6px; color: var(--gold); margin-bottom: 4px; }
-.setup-sub { font-size: 13px; color: var(--text-dim); }
-.setup-body { padding: 28px 36px; display: flex; flex-direction: column; gap: 28px; }
-.setup-section-title { font-size: 10px; letter-spacing: 3px; color: var(--gold-dim); text-transform: uppercase; margin-bottom: 12px; font-family: 'Rajdhani', sans-serif; }
-.form-row { display: flex; gap: 10px; align-items: flex-end; flex-wrap: wrap; }
-.form-group { display: flex; flex-direction: column; gap: 5px; }
-.form-label { font-size: 12px; color: var(--text-dim); }
-.form-input {
-  background: var(--bg3); border: 1px solid var(--border); color: var(--text);
-  padding: 8px 12px; border-radius: 2px; font-size: 13px; font-family: 'Noto Sans KR', sans-serif;
-  outline: none; transition: border-color 0.15s;
-}
-.form-input:focus { border-color: var(--gold-dim); }
-.form-input::placeholder { color: var(--text-dim); }
-.teams-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(175px, 1fr)); gap: 8px; }
-.team-input-card { background: var(--bg3); border: 1px solid var(--border); border-radius: 3px; padding: 10px 12px; display: flex; flex-direction: column; gap: 7px; }
-.team-color-row { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
-.color-dot { width: 13px; height: 13px; border-radius: 50%; border: 2px solid rgba(255,255,255,0.15); cursor: pointer; transition: transform 0.1s; flex-shrink: 0; }
-.color-dot:hover { transform: scale(1.2); }
-.color-dot.selected { border-color: #fff; transform: scale(1.15); }
+/* ══ ROLE SCREEN ══ */
+#role-screen{align-items:center;justify-content:center;padding:40px 20px;}
+.role-wrap{width:100%;max-width:540px;}
+.role-title{font-family:'Bebas Neue',sans-serif;font-size:54px;letter-spacing:8px;color:var(--gold);text-align:center;margin-bottom:4px;}
+.role-sub{text-align:center;font-size:13px;color:var(--text-dim);margin-bottom:36px;}
+.role-cards{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:28px;}
+.role-card{background:var(--bg2);border:2px solid var(--border);border-radius:6px;
+  padding:22px 14px;text-align:center;cursor:pointer;transition:all 0.2s;}
+.role-card:hover{border-color:var(--border-bright);background:rgba(201,168,76,0.04);}
+.role-card.selected{border-color:var(--gold);background:rgba(201,168,76,0.08);}
+.rc-icon{font-size:30px;margin-bottom:8px;}
+.rc-name{font-size:14px;font-weight:700;margin-bottom:3px;}
+.rc-desc{font-size:11px;color:var(--text-dim);line-height:1.5;}
+.role-form{background:var(--bg2);border:1px solid var(--border);border-radius:4px;padding:20px 22px;}
+.rf-title{font-size:10px;letter-spacing:2px;color:var(--gold-dim);text-transform:uppercase;font-family:'Rajdhani',sans-serif;margin-bottom:14px;}
 
-/* Firebase config box */
-.fb-config-box {
-  background: var(--bg3); border: 1px solid rgba(76,139,201,0.3);
-  border-radius: 3px; padding: 16px 20px;
-}
-.fb-config-box .fb-config-title { font-size: 12px; color: var(--blue); margin-bottom: 10px; font-weight: 500; }
-.fb-config-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-.fb-hint { font-size: 11px; color: var(--text-dim); margin-top: 8px; line-height: 1.6; }
-.fb-hint a { color: var(--blue); }
-.fb-skip-note { font-size: 11px; color: var(--text-dim); margin-top: 6px; }
+/* ══ SETUP SCREEN ══ */
+#setup-screen{align-items:center;justify-content:flex-start;padding:28px 20px 60px;}
+.setup-card{background:var(--bg2);border:1px solid var(--border);border-radius:4px;width:100%;max-width:900px;overflow:hidden;}
+.setup-header{padding:22px 30px 16px;border-bottom:1px solid var(--border);background:linear-gradient(135deg,var(--bg3),var(--bg2));}
+.setup-title{font-family:'Bebas Neue',sans-serif;font-size:32px;letter-spacing:5px;color:var(--gold);margin-bottom:2px;}
+.setup-sub{font-size:12px;color:var(--text-dim);}
+.setup-body{padding:22px 30px;display:flex;flex-direction:column;gap:22px;}
+.sec-title{font-size:10px;letter-spacing:3px;color:var(--gold-dim);text-transform:uppercase;margin-bottom:10px;font-family:'Rajdhani',sans-serif;}
+.teams-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(168px,1fr));gap:7px;}
+.team-card-input{background:var(--bg3);border:1px solid var(--border);border-radius:3px;padding:9px 11px;display:flex;flex-direction:column;gap:6px;}
+.color-row{display:flex;gap:5px;flex-wrap:wrap;}
+.cdot{width:12px;height:12px;border-radius:50%;border:2px solid rgba(255,255,255,0.15);cursor:pointer;transition:transform 0.1s;flex-shrink:0;}
+.cdot:hover{transform:scale(1.2);}
+.cdot.on{border-color:#fff;transform:scale(1.15);}
+.player-table-wrap{overflow-x:auto;}
+.player-table{width:100%;border-collapse:collapse;font-size:12px;}
+.player-table th{text-align:left;padding:6px 9px;font-size:9px;letter-spacing:2px;color:var(--text-dim);text-transform:uppercase;font-family:'Rajdhani',sans-serif;border-bottom:1px solid var(--border);}
+.player-table td{padding:5px 9px;border-bottom:1px solid rgba(201,168,76,0.07);vertical-align:middle;}
+.player-table tr:hover td{background:rgba(201,168,76,0.04);}
+.add-row td{padding:7px 9px;}
+.xlsx-drop{border:1.5px dashed var(--border-bright);border-radius:4px;padding:13px 18px;margin-bottom:10px;text-align:center;cursor:pointer;transition:background 0.15s;}
+.xlsx-drop:hover{background:rgba(201,168,76,0.04);}
+.fb-box{background:var(--bg3);border:1px solid rgba(76,139,201,0.3);border-radius:3px;padding:13px 16px;}
+.fb-box-title{font-size:12px;color:var(--blue);margin-bottom:9px;font-weight:500;}
+.fb-grid{display:grid;grid-template-columns:1fr 1fr;gap:7px;}
+.fb-hint{font-size:11px;color:var(--text-dim);margin-top:7px;line-height:1.6;}
+.fb-hint a{color:var(--blue);}
 
-/* Player table */
-.player-table-wrap { overflow-x: auto; }
-.player-table { width: 100%; border-collapse: collapse; font-size: 13px; }
-.player-table th {
-  text-align: left; padding: 7px 10px; font-size: 10px; letter-spacing: 2px;
-  color: var(--text-dim); text-transform: uppercase; font-family: 'Rajdhani', sans-serif;
-  border-bottom: 1px solid var(--border);
-}
-.player-table td { padding: 7px 10px; border-bottom: 1px solid rgba(201,168,76,0.07); vertical-align: middle; }
-.player-table tr:hover td { background: rgba(201,168,76,0.04); }
-.add-player-row td { padding: 8px 10px; }
+/* ══ AUCTION SCREEN ══ */
+#auction-screen{flex-direction:column;}
+.auction-main{display:flex;flex:1;min-height:0;}
+.sidebar{width:242px;background:var(--bg2);flex-shrink:0;display:flex;flex-direction:column;overflow-y:auto;}
+.sidebar-left{border-right:1px solid var(--border);}
+.sidebar-right{border-left:1px solid var(--border);}
+.sb-sec{padding:13px;border-bottom:1px solid var(--border);}
+.sb-title{font-size:9px;letter-spacing:3px;color:var(--gold-dim);text-transform:uppercase;font-family:'Rajdhani',sans-serif;margin-bottom:9px;}
 
-/* Excel drop */
-.xlsx-drop {
-  border: 1.5px dashed var(--border-bright); border-radius: 4px;
-  padding: 16px 20px; margin-bottom: 12px; text-align: center;
-  cursor: pointer; transition: background 0.15s;
-}
-.xlsx-drop:hover { background: rgba(201,168,76,0.05); }
+/* team cards */
+.tc{background:var(--bg3);border:1px solid var(--border);border-radius:3px;padding:9px 11px;margin-bottom:5px;position:relative;overflow:hidden;transition:border-color 0.2s;}
+.tc:last-child{margin-bottom:0;}
+.tc.top{border-color:var(--gold-dim);background:rgba(201,168,76,0.06);}
+.tc-stripe{position:absolute;left:0;top:0;bottom:0;width:3px;}
+.tc-hdr{display:flex;justify-content:space-between;align-items:center;margin-bottom:5px;}
+.tc-name{font-size:13px;font-weight:500;}
+.tc-pts{font-family:'Rajdhani',sans-serif;font-size:16px;font-weight:700;color:var(--gold);}
+.pts-track{height:3px;background:rgba(255,255,255,0.07);border-radius:2px;overflow:hidden;}
+.pts-fill{height:100%;border-radius:2px;transition:width 0.4s;}
+.tc-members{margin-top:5px;display:flex;flex-wrap:wrap;gap:3px;}
+.tc-chip{font-size:10px;padding:1px 5px;border-radius:2px;background:rgba(255,255,255,0.06);color:var(--text-dim);}
 
-/* ── AUCTION SCREEN ── */
-#auction-screen { flex-direction: column; }
-.auction-main { display: flex; flex: 1; min-height: 0; }
+/* queue */
+.qi{display:flex;align-items:center;gap:7px;padding:6px 7px;border-radius:2px;background:var(--bg3);border:1px solid var(--border);margin-bottom:4px;transition:all 0.15s;}
+.qi:last-child{margin-bottom:0;}
+.qi.clickable{cursor:pointer;}
+.qi.clickable:hover{border-color:var(--gold-dim);}
+.qi.current{border-color:var(--gold);background:rgba(201,168,76,0.08);}
+.qi.sold{opacity:0.35;}
+.qi-num{font-size:10px;color:var(--text-dim);width:14px;flex-shrink:0;font-family:'Rajdhani',sans-serif;}
+.qi-name{flex:1;font-size:12px;}
+.qi-score{font-family:'Rajdhani',sans-serif;font-size:12px;font-weight:700;color:var(--gold);background:rgba(201,168,76,0.1);padding:1px 5px;border-radius:2px;}
+.qi-sold{font-size:10px;padding:1px 5px;border-radius:2px;background:rgba(76,184,122,0.15);color:#6DE08A;}
 
-.sidebar { width: 250px; background: var(--bg2); flex-shrink: 0; display: flex; flex-direction: column; overflow-y: auto; }
-.sidebar-left { border-right: 1px solid var(--border); }
-.sidebar-right { border-left: 1px solid var(--border); }
-.sidebar-section { padding: 16px; border-bottom: 1px solid var(--border); }
-.sidebar-title { font-size: 10px; letter-spacing: 3px; color: var(--gold-dim); text-transform: uppercase; font-family: 'Rajdhani', sans-serif; margin-bottom: 12px; }
+/* center */
+.center-stage{flex:1;display:flex;flex-direction:column;overflow:hidden;}
+.stage-inner{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px 18px;position:relative;overflow-y:auto;}
+.stage-glow{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:320px;height:320px;border-radius:50%;background:radial-gradient(circle,rgba(201,168,76,0.05) 0%,transparent 70%);pointer-events:none;}
+.no-auction{text-align:center;color:var(--text-dim);font-family:'Bebas Neue',sans-serif;font-size:19px;letter-spacing:4px;}
 
-/* Team cards */
-.team-card {
-  background: var(--bg3); border: 1px solid var(--border); border-radius: 3px;
-  padding: 10px 12px; margin-bottom: 7px; position: relative; overflow: hidden; transition: border-color 0.2s;
-}
-.team-card:last-child { margin-bottom: 0; }
-.team-card.top-bidder { border-color: var(--gold-dim); background: rgba(201,168,76,0.06); }
-.team-card-stripe { position: absolute; left: 0; top: 0; bottom: 0; width: 3px; }
-.team-card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
-.team-card-name { font-size: 13px; font-weight: 500; }
-.team-card-pts { font-family: 'Rajdhani', sans-serif; font-size: 17px; font-weight: 700; color: var(--gold); }
-.pts-bar-track { height: 3px; background: rgba(255,255,255,0.07); border-radius: 2px; overflow: hidden; }
-.pts-bar-fill { height: 100%; border-radius: 2px; transition: width 0.4s; }
-.team-members { margin-top: 7px; display: flex; flex-wrap: wrap; gap: 3px; }
-.team-member-chip { font-size: 10px; padding: 2px 6px; border-radius: 2px; background: rgba(255,255,255,0.06); color: var(--text-dim); }
+/* player card */
+.spotlight{width:100%;max-width:480px;animation:spotIn 0.35s cubic-bezier(0.16,1,0.3,1);}
+@keyframes spotIn{from{opacity:0;transform:translateY(15px) scale(0.97)}to{opacity:1;transform:none}}
+.pcard{background:var(--bg2);border:1px solid var(--border-bright);border-radius:4px;overflow:hidden;}
+.pcard-top{padding:18px 20px 13px;background:linear-gradient(160deg,var(--bg3) 0%,var(--bg2) 100%);border-bottom:1px solid var(--border);display:flex;gap:13px;align-items:center;}
+.pav{width:58px;height:58px;border-radius:50%;border:2px solid var(--border-bright);display:flex;align-items:center;justify-content:center;font-family:'Bebas Neue',sans-serif;font-size:21px;color:var(--gold);background:var(--bg3);flex-shrink:0;}
+.pname{font-family:'Bebas Neue',sans-serif;font-size:28px;letter-spacing:2px;color:#fff;line-height:1;}
+.prole{font-size:11px;color:var(--text-dim);margin-top:2px;}
+.pscore{font-family:'Bebas Neue',sans-serif;font-size:40px;color:var(--gold);line-height:1;}
+.pscore-lbl{font-size:9px;letter-spacing:2px;color:var(--text-dim);text-transform:uppercase;}
+.pbar-wrap{padding:0 20px 11px;}
+.pbar-track{height:3px;background:rgba(255,255,255,0.07);border-radius:2px;overflow:hidden;}
+.pbar-fill{height:100%;border-radius:2px;background:linear-gradient(90deg,var(--gold-dim),var(--gold-light));transition:width 0.5s;}
+.pmemo{padding:0 20px 9px;font-size:11px;color:var(--text-dim);}
+.bh-wrap{padding:0 20px 11px;}
+.bh-title{font-size:9px;letter-spacing:2px;color:var(--text-dim);text-transform:uppercase;margin-bottom:5px;}
+.bh-list{display:flex;flex-direction:column;gap:3px;max-height:84px;overflow:hidden;}
+.bh-item{display:flex;justify-content:space-between;padding:3px 7px;border-radius:2px;font-size:12px;}
+.bh-item:first-child{background:rgba(201,168,76,0.1);}
+.bh-pts{font-family:'Rajdhani',sans-serif;font-size:13px;font-weight:700;color:var(--gold);}
+.bid-area{padding:13px 20px 16px;background:var(--bg3);}
+.ba-top{display:flex;justify-content:space-between;align-items:flex-end;}
+.ba-lbl{font-size:9px;letter-spacing:2px;color:var(--text-dim);text-transform:uppercase;margin-bottom:2px;}
+.ba-amount{font-family:'Bebas Neue',sans-serif;font-size:36px;color:var(--gold-light);line-height:1;}
+.ba-by{font-size:11px;color:var(--text-dim);margin-top:1px;}
+.ba-by span{font-weight:500;}
+.admin-ctrl{display:flex;flex-direction:column;gap:5px;align-items:flex-end;}
+.act-row{display:flex;gap:5px;}
+.bid-field{width:100px;padding:6px 8px;font-size:13px;text-align:right;background:var(--bg2);border:1px solid var(--border);color:var(--text);border-radius:2px;font-family:'Noto Sans KR',sans-serif;outline:none;}
+.bid-field:focus{border-color:var(--gold-dim);}
 
-/* Queue */
-.queue-item {
-  display: flex; align-items: center; gap: 8px; padding: 7px 8px;
-  border-radius: 2px; background: var(--bg3); border: 1px solid var(--border);
-  margin-bottom: 5px; cursor: pointer; transition: all 0.15s;
-}
-.queue-item:last-child { margin-bottom: 0; }
-.queue-item:hover { border-color: var(--gold-dim); }
-.queue-item.current { border-color: var(--gold); background: rgba(201,168,76,0.08); }
-.queue-item.sold { opacity: 0.35; cursor: default; }
-.queue-num { font-size: 10px; color: var(--text-dim); width: 16px; flex-shrink: 0; font-family: 'Rajdhani', sans-serif; }
-.queue-name { flex: 1; font-size: 12px; }
-.queue-score-badge { font-family: 'Rajdhani', sans-serif; font-size: 12px; font-weight: 700; color: var(--gold); background: rgba(201,168,76,0.1); padding: 1px 7px; border-radius: 2px; }
-.queue-sold-tag { font-size: 10px; padding: 1px 6px; border-radius: 2px; background: rgba(76,184,122,0.15); color: #6DE08A; }
+/* captain bar */
+.captain-bar{background:var(--bg2);border-top:1px solid var(--border);padding:10px 18px;display:flex;gap:9px;align-items:center;flex-shrink:0;}
+.cap-label{font-size:12px;color:var(--text-dim);white-space:nowrap;}
+.cap-team{font-size:13px;font-weight:700;padding:5px 12px;border-radius:2px;border:1px solid var(--border-bright);background:rgba(201,168,76,0.08);white-space:nowrap;}
+.cap-cur{font-size:11px;color:var(--text-dim);white-space:nowrap;}
+.cap-cur span{color:var(--gold);font-family:'Rajdhani',sans-serif;font-weight:700;}
 
-/* Center stage */
-.center-stage {
-  flex: 1; display: flex; flex-direction: column;
-  align-items: center; justify-content: center; padding: 32px 24px; position: relative; overflow-y: auto;
-}
-.center-stage::before {
-  content: ''; position: absolute; top: 0; left: 50%; transform: translateX(-50%);
-  width: 1px; height: 50px; background: linear-gradient(to bottom, var(--gold-dim), transparent);
-}
-.spotlight-glow {
-  position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%);
-  width: 360px; height: 360px; border-radius: 50%;
-  background: radial-gradient(circle, rgba(201,168,76,0.05) 0%, transparent 70%);
-  pointer-events: none;
-}
-.no-auction { text-align: center; color: var(--text-dim); font-family: 'Bebas Neue', sans-serif; font-size: 20px; letter-spacing: 4px; }
+/* modals */
+.modal-bg{position:fixed;inset:0;z-index:400;background:rgba(0,0,0,0.78);display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity 0.2s;}
+.modal-bg.open{opacity:1;pointer-events:all;}
+.modal-box{background:var(--bg2);border:1px solid var(--border-bright);border-radius:4px;width:90%;max-width:600px;max-height:82vh;display:flex;flex-direction:column;transform:translateY(13px);transition:transform 0.2s;}
+.modal-bg.open .modal-box{transform:none;}
+.modal-head{display:flex;justify-content:space-between;align-items:center;padding:13px 17px;border-bottom:1px solid var(--border);}
+.modal-title{font-family:'Bebas Neue',sans-serif;font-size:19px;letter-spacing:3px;color:var(--gold);}
+.modal-close{background:none;border:none;color:var(--text-dim);font-size:19px;cursor:pointer;}
+.modal-close:hover{color:var(--text);}
+.modal-body{padding:13px 17px;overflow-y:auto;}
+.remain-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(125px,1fr));gap:7px;}
+.rcard{background:var(--bg3);border:1px solid var(--border);border-radius:3px;padding:9px 10px;transition:all 0.15s;}
+.rcard.clickable{cursor:pointer;}
+.rcard.clickable:hover{border-color:var(--gold-dim);background:rgba(201,168,76,0.06);}
+.rc-name{font-size:13px;font-weight:500;margin-bottom:2px;}
+.rc-pos{font-size:11px;color:var(--text-dim);}
+.rc-score{font-family:'Rajdhani',sans-serif;font-size:17px;font-weight:700;color:var(--gold);margin-top:4px;}
 
-/* Player card */
-.spotlight { width: 100%; max-width: 500px; animation: spotIn 0.35s cubic-bezier(0.16,1,0.3,1); }
-@keyframes spotIn { from{opacity:0;transform:translateY(18px) scale(0.97)} to{opacity:1;transform:none} }
-.player-card { background: var(--bg2); border: 1px solid var(--border-bright); border-radius: 4px; overflow: hidden; }
-.player-card-top {
-  padding: 22px 24px 16px; background: linear-gradient(160deg, var(--bg3) 0%, var(--bg2) 100%);
-  border-bottom: 1px solid var(--border); display: flex; gap: 16px; align-items: center;
-}
-.player-avatar {
-  width: 64px; height: 64px; border-radius: 50%; border: 2px solid var(--border-bright);
-  display: flex; align-items: center; justify-content: center;
-  font-family: 'Bebas Neue', sans-serif; font-size: 24px; color: var(--gold);
-  background: var(--bg3); flex-shrink: 0;
-}
-.player-name-display { font-family: 'Bebas Neue', sans-serif; font-size: 32px; letter-spacing: 2px; color: #fff; line-height: 1; }
-.player-role-display { font-size: 11px; color: var(--text-dim); margin-top: 3px; }
-.player-score-big { font-family: 'Bebas Neue', sans-serif; font-size: 46px; color: var(--gold); line-height: 1; }
-.player-score-label { font-size: 9px; letter-spacing: 2px; color: var(--text-dim); text-transform: uppercase; }
-.score-bar-wrap { padding: 0 24px 14px; }
-.score-bar-track { height: 4px; background: rgba(255,255,255,0.07); border-radius: 2px; overflow: hidden; }
-.score-bar-fill { height: 100%; border-radius: 2px; background: linear-gradient(90deg, var(--gold-dim), var(--gold-light)); transition: width 0.5s; }
+/* admin float */
+.admin-float{position:fixed;bottom:18px;right:18px;background:var(--bg2);border:1px solid var(--border-bright);border-radius:4px;padding:11px 15px;z-index:200;min-width:185px;box-shadow:0 8px 40px rgba(0,0,0,0.6);display:none;}
+.admin-float.open{display:block;animation:afIn 0.18s ease;}
+@keyframes afIn{from{opacity:0;transform:translateY(7px)}to{opacity:1;transform:none}}
+.af-title{font-size:9px;letter-spacing:2px;color:var(--text-dim);text-transform:uppercase;margin-bottom:8px;}
+.af-btns{display:flex;flex-direction:column;gap:5px;}
 
-/* Bid section */
-.bid-section { padding: 16px 24px 20px; background: var(--bg3); }
-.bid-label-sm { font-size: 9px; letter-spacing: 2px; color: var(--text-dim); text-transform: uppercase; margin-bottom: 3px; }
-.bid-amount-big { font-family: 'Bebas Neue', sans-serif; font-size: 42px; color: var(--gold-light); line-height: 1; }
-.bid-by-text { font-size: 11px; color: var(--text-dim); margin-top: 2px; }
-.bid-by-text span { font-weight: 500; }
-.admin-bid-controls { display: flex; flex-direction: column; gap: 7px; align-items: flex-end; }
-.bid-input-row { display: flex; gap: 7px; }
-.bid-input-field {
-  width: 110px; padding: 7px 10px; font-size: 14px; text-align: right;
-  background: var(--bg2); border: 1px solid var(--border); color: var(--text);
-  border-radius: 2px; font-family: 'Noto Sans KR', sans-serif; outline: none;
-}
-.bid-input-field:focus { border-color: var(--gold-dim); }
-.bid-history { padding: 0 24px 14px; }
-.bid-hist-title { font-size: 9px; letter-spacing: 2px; color: var(--text-dim); text-transform: uppercase; margin-bottom: 6px; }
-.bid-hist-list { display: flex; flex-direction: column; gap: 3px; max-height: 90px; overflow: hidden; }
-.bid-hist-item { display: flex; justify-content: space-between; padding: 4px 8px; border-radius: 2px; font-size: 12px; animation: bidIn 0.2s ease; }
-.bid-hist-item:first-child { background: rgba(201,168,76,0.1); }
-@keyframes bidIn { from{opacity:0;transform:translateX(-6px)} to{opacity:1;transform:none} }
-.bid-hist-amount { font-family: 'Rajdhani', sans-serif; font-size: 13px; font-weight: 700; color: var(--gold); }
+/* overlays */
+.sold-overlay,.pass-overlay{position:fixed;inset:0;z-index:500;pointer-events:none;display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity 0.3s;}
+.sold-overlay.show,.pass-overlay.show{opacity:1;}
+.sold-overlay::before,.pass-overlay::before{content:'';position:absolute;inset:0;background:rgba(0,0,0,0.78);}
+.sold-banner,.pass-banner{position:relative;text-align:center;animation:popIn 0.4s cubic-bezier(0.34,1.56,0.64,1);}
+@keyframes popIn{from{transform:scale(0.4);opacity:0}to{transform:scale(1);opacity:1}}
+.sold-text{font-family:'Bebas Neue',sans-serif;font-size:84px;letter-spacing:10px;color:var(--gold);display:block;line-height:1;text-shadow:0 0 60px rgba(201,168,76,0.5);}
+.pass-text{font-family:'Bebas Neue',sans-serif;font-size:84px;letter-spacing:8px;color:var(--red);display:block;line-height:1;text-shadow:0 0 60px rgba(201,76,76,0.4);}
+.overlay-sub{font-size:15px;color:var(--text);margin-top:5px;letter-spacing:2px;}
 
-/* ── MODALS ── */
-.modal-overlay {
-  position: fixed; inset: 0; z-index: 400; background: rgba(0,0,0,0.75);
-  display: flex; align-items: center; justify-content: center;
-  opacity: 0; pointer-events: none; transition: opacity 0.2s;
-}
-.modal-overlay.open { opacity: 1; pointer-events: all; }
-.modal-box {
-  background: var(--bg2); border: 1px solid var(--border-bright); border-radius: 4px;
-  width: 90%; max-width: 620px; max-height: 80vh; display: flex; flex-direction: column;
-  transform: translateY(16px); transition: transform 0.2s;
-}
-.modal-overlay.open .modal-box { transform: none; }
-.modal-header { display: flex; justify-content: space-between; align-items: center; padding: 16px 20px; border-bottom: 1px solid var(--border); }
-.modal-title { font-family: 'Bebas Neue', sans-serif; font-size: 22px; letter-spacing: 3px; color: var(--gold); }
-.modal-close { background: none; border: none; color: var(--text-dim); font-size: 20px; cursor: pointer; padding: 0 4px; }
-.modal-close:hover { color: var(--text); }
-.modal-body { padding: 16px 20px; overflow-y: auto; }
+/* toast */
+.toast{position:fixed;top:62px;left:50%;transform:translateX(-50%) translateY(-6px);background:var(--bg2);border:1px solid var(--border-bright);color:var(--text);padding:8px 16px;border-radius:3px;font-size:13px;opacity:0;pointer-events:none;transition:all 0.2s;z-index:999;}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
 
-/* Remaining players modal grid */
-.remain-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 8px; }
-.remain-card {
-  background: var(--bg3); border: 1px solid var(--border); border-radius: 3px;
-  padding: 10px 12px; cursor: pointer; transition: all 0.15s;
-}
-.remain-card:hover { border-color: var(--gold-dim); background: rgba(201,168,76,0.06); }
-.remain-card-name { font-size: 13px; font-weight: 500; margin-bottom: 4px; }
-.remain-card-pos { font-size: 11px; color: var(--text-dim); }
-.remain-card-score { font-family: 'Rajdhani', sans-serif; font-size: 18px; font-weight: 700; color: var(--gold); margin-top: 6px; }
+/* result */
+#result-screen{align-items:center;justify-content:flex-start;padding:32px 20px 60px;}
+.res-wrap{width:100%;max-width:960px;}
+.res-title{font-family:'Bebas Neue',sans-serif;font-size:40px;letter-spacing:8px;color:var(--gold);text-align:center;margin-bottom:22px;}
+.res-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:11px;}
+.res-card{background:var(--bg2);border:1px solid var(--border);border-radius:4px;overflow:hidden;}
+.res-head{padding:10px 13px;border-bottom:1px solid var(--border);background:var(--bg3);}
+.res-name{font-size:14px;font-weight:700;}
+.res-spent{font-size:11px;color:var(--text-dim);margin-top:2px;}
+.res-players{padding:9px 13px;display:flex;flex-direction:column;gap:4px;}
+.res-row{display:flex;justify-content:space-between;font-size:12px;}
+.res-pts{font-family:'Rajdhani',sans-serif;font-weight:700;color:var(--gold);}
 
-/* Admin panel */
-.admin-panel {
-  position: fixed; bottom: 20px; right: 20px; background: var(--bg2);
-  border: 1px solid var(--border-bright); border-radius: 4px; padding: 14px 18px;
-  z-index: 200; min-width: 200px; box-shadow: 0 8px 40px rgba(0,0,0,0.6);
-  display: none;
-}
-.admin-panel.visible { display: block; animation: panelIn 0.2s ease; }
-@keyframes panelIn { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:none} }
-.admin-panel-title { font-size: 10px; letter-spacing: 2px; color: var(--text-dim); text-transform: uppercase; margin-bottom: 10px; }
-.admin-btn-grid { display: flex; flex-direction: column; gap: 7px; }
-
-/* Toast */
-.toast {
-  position: fixed; top: 64px; left: 50%; transform: translateX(-50%) translateY(-6px);
-  background: var(--bg2); border: 1px solid var(--border-bright); color: var(--text);
-  padding: 9px 18px; border-radius: 3px; font-size: 13px;
-  opacity: 0; pointer-events: none; transition: all 0.2s; z-index: 999;
-}
-.toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
-
-/* SOLD overlay */
-.sold-overlay { position: fixed; inset: 0; z-index: 500; pointer-events: none; display: flex; align-items: center; justify-content: center; opacity: 0; transition: opacity 0.3s; }
-.sold-overlay.show { opacity: 1; }
-.sold-overlay::before { content: ''; position: absolute; inset: 0; background: rgba(0,0,0,0.75); }
-.sold-banner { position: relative; text-align: center; animation: soldBounce 0.4s cubic-bezier(0.34,1.56,0.64,1); }
-@keyframes soldBounce { from{transform:scale(0.5);opacity:0} to{transform:scale(1);opacity:1} }
-.sold-text { font-family: 'Bebas Neue', sans-serif; font-size: 88px; letter-spacing: 10px; color: var(--gold); display: block; line-height: 1; text-shadow: 0 0 60px rgba(201,168,76,0.5); }
-.sold-info { font-size: 17px; color: var(--text); margin-top: 6px; letter-spacing: 2px; }
-
-/* Result screen */
-#result-screen { align-items: center; justify-content: flex-start; padding: 40px 24px 60px; }
-.result-wrap { width: 100%; max-width: 960px; }
-.result-title { font-family: 'Bebas Neue', sans-serif; font-size: 44px; letter-spacing: 8px; color: var(--gold); text-align: center; margin-bottom: 28px; }
-.result-teams-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 14px; }
-.result-team-card { background: var(--bg2); border: 1px solid var(--border); border-radius: 4px; overflow: hidden; }
-.result-team-header { padding: 12px 14px; border-bottom: 1px solid var(--border); background: var(--bg3); }
-.result-team-name { font-size: 15px; font-weight: 700; }
-.result-team-spent { font-size: 11px; color: var(--text-dim); margin-top: 2px; }
-.result-players { padding: 10px 14px; display: flex; flex-direction: column; gap: 5px; }
-.result-player-row { display: flex; justify-content: space-between; font-size: 12px; }
-.result-player-pts { font-family: 'Rajdhani', sans-serif; font-weight: 700; color: var(--gold); }
-
-/* ── LIVE BIDS FEED (Firebase) ── */
-.live-feed { padding: 12px 16px; border-top: 1px solid var(--border); background: var(--bg3); }
-.live-feed-title { font-size: 9px; letter-spacing: 2px; color: var(--text-dim); text-transform: uppercase; margin-bottom: 8px; font-family: 'Rajdhani', sans-serif; }
-.live-bid-row {
-  display: flex; justify-content: space-between; align-items: center;
-  padding: 5px 8px; border-radius: 2px; font-size: 12px; margin-bottom: 4px;
-}
-.live-bid-row.mine { background: rgba(201,168,76,0.12); }
-.live-bid-row.others { background: rgba(255,255,255,0.04); }
-.live-bid-user { color: var(--text-dim); font-size: 11px; }
-.live-bid-pts { font-family: 'Rajdhani', sans-serif; font-weight: 700; color: var(--gold); }
-
-/* Multi-bid input (for non-admin viewers) */
-.viewer-bid-bar {
-  background: var(--bg2); border-top: 1px solid var(--border);
-  padding: 12px 20px; display: flex; gap: 10px; align-items: center;
-}
-.viewer-bid-bar .vb-label { font-size: 12px; color: var(--text-dim); white-space: nowrap; }
-.viewer-bid-bar select, .viewer-bid-bar input { font-family: 'Noto Sans KR', sans-serif; }
-
-::-webkit-scrollbar { width: 4px; }
-::-webkit-scrollbar-track { background: var(--bg); }
-::-webkit-scrollbar-thumb { background: var(--border-bright); border-radius: 2px; }
-.hidden { display: none !important; }
+::-webkit-scrollbar{width:4px;}
+::-webkit-scrollbar-track{background:var(--bg);}
+::-webkit-scrollbar-thumb{background:var(--border-bright);border-radius:2px;}
+.hidden{display:none!important;}
 </style>
 </head>
 <body>
 
 <div class="toast" id="toast"></div>
 <div class="sold-overlay" id="sold-overlay">
-  <div class="sold-banner">
-    <span class="sold-text">SOLD!</span>
-    <div class="sold-info" id="sold-info"></div>
+  <div class="sold-banner"><span class="sold-text">SOLD!</span><div class="overlay-sub" id="sold-sub"></div></div>
+</div>
+<div class="pass-overlay" id="pass-overlay">
+  <div class="pass-banner"><span class="pass-text">PASS</span><div class="overlay-sub" id="pass-sub"></div></div>
+</div>
+
+<!-- ══════════════════════════════════
+     ROLE SELECT SCREEN
+══════════════════════════════════ -->
+<div class="screen active" id="role-screen">
+  <div style="width:100%;max-width:540px;margin:0 auto;padding:56px 20px 40px;">
+    <div class="role-title">DRAFT ARENA</div>
+    <div class="role-sub">역할을 선택하고 경매에 참여하세요</div>
+
+    <div class="role-cards">
+      <div class="role-card" id="rc-admin" onclick="pickRole('admin')">
+        <div class="rc-icon">⚙️</div>
+        <div class="rc-name" style="color:var(--gold);">경매 관리자</div>
+        <div class="rc-desc">선수 등록<br>낙찰·유찰 결정</div>
+      </div>
+      <div class="role-card" id="rc-captain" onclick="pickRole('captain')">
+        <div class="rc-icon">🎮</div>
+        <div class="rc-name" style="color:#7EB8F0;">팀장</div>
+        <div class="rc-desc">팀을 대표해<br>포인트로 입찰</div>
+      </div>
+      <div class="role-card" id="rc-spectator" onclick="pickRole('spectator')">
+        <div class="rc-icon">👁️</div>
+        <div class="rc-name" style="color:var(--text-dim);">관전자</div>
+        <div class="rc-desc">경매 화면<br>관람만 가능</div>
+      </div>
+    </div>
+
+    <!-- Admin form -->
+    <div class="role-form hidden" id="form-admin">
+      <div class="rf-title">경매 관리자 설정</div>
+      <div class="form-group">
+        <label class="form-label">관리자 닉네임</label>
+        <input class="form-input" id="admin-nick" placeholder="예: 운영진">
+      </div>
+      <button class="btn btn-gold btn-block" onclick="goAdmin()">설정 화면으로 →</button>
+    </div>
+
+    <!-- Captain form -->
+    <div class="role-form hidden" id="form-captain">
+      <div class="rf-title">팀장 입장</div>
+      <div class="form-group">
+        <label class="form-label">팀 이름 <span style="color:var(--text-dim);font-size:10px;">관리자가 등록한 팀명과 일치해야 해요</span></label>
+        <input class="form-input" id="cap-team" placeholder="예: 레드 팀">
+      </div>
+      <div class="form-group">
+        <label class="form-label">본인 닉네임</label>
+        <input class="form-input" id="cap-nick" placeholder="예: 홍길동">
+      </div>
+      <button class="btn btn-blue btn-block" onclick="goCaptain()">경매 참여 →</button>
+    </div>
+
+    <!-- Spectator form -->
+    <div class="role-form hidden" id="form-spectator">
+      <div class="rf-title">관전자 입장</div>
+      <div class="form-group">
+        <label class="form-label">닉네임 (선택)</label>
+        <input class="form-input" id="spec-nick" placeholder="예: 구경꾼">
+      </div>
+      <button class="btn btn-ghost btn-block" onclick="goSpectator()">관전 시작 →</button>
+    </div>
   </div>
 </div>
 
-<!-- ══════════════ SETUP SCREEN ══════════════ -->
-<div class="screen active" id="setup-screen">
-  <div style="width:100%;max-width:900px;margin:0 auto;padding:36px 24px 60px;">
+<!-- ══════════════════════════════════
+     SETUP SCREEN (admin only)
+══════════════════════════════════ -->
+<div class="screen" id="setup-screen">
+  <div style="width:100%;max-width:900px;margin:0 auto;padding:24px 20px 60px;">
     <div class="setup-card">
       <div class="setup-header">
-        <div class="setup-title">DRAFT ARENA</div>
-        <div class="setup-sub">팀과 선수를 등록하고 실시간 경매를 시작하세요</div>
+        <div class="setup-title">경매 설정</div>
+        <div class="setup-sub">팀·선수를 등록하고 경매를 시작하세요</div>
       </div>
       <div class="setup-body">
 
-        <!-- FIREBASE CONFIG -->
+        <!-- Firebase -->
         <div>
-          <div class="setup-section-title">Firebase 연동 (실시간 멀티 입찰)</div>
-          <div class="fb-config-box">
-            <div class="fb-config-title">🔥 Firebase 설정 — 여러 명이 동시에 입찰하려면 필요해요</div>
-            <div class="fb-config-grid">
-              <div class="form-group">
-                <label class="form-label">API Key</label>
-                <input class="form-input" id="fb-api-key" placeholder="AIzaSy...">
-              </div>
-              <div class="form-group">
-                <label class="form-label">Auth Domain</label>
-                <input class="form-input" id="fb-auth-domain" placeholder="xxx.firebaseapp.com">
-              </div>
-              <div class="form-group">
-                <label class="form-label">Database URL</label>
-                <input class="form-input" id="fb-db-url" placeholder="https://xxx-default-rtdb.firebaseio.com">
-              </div>
-              <div class="form-group">
-                <label class="form-label">Project ID</label>
-                <input class="form-input" id="fb-project-id" placeholder="my-draft-arena">
-              </div>
+          <div class="sec-title">Firebase 연동 (실시간 멀티 입찰)</div>
+          <div class="fb-box">
+            <div class="fb-box-title">🔥 팀장들이 각자 입찰하려면 Firebase 설정이 필요해요</div>
+            <div class="fb-grid">
+              <div class="form-group" style="margin-bottom:0;"><label class="form-label">API Key</label><input class="form-input" id="fb-api-key" placeholder="AIzaSy..."></div>
+              <div class="form-group" style="margin-bottom:0;"><label class="form-label">Auth Domain</label><input class="form-input" id="fb-auth-domain" placeholder="xxx.firebaseapp.com"></div>
+              <div class="form-group" style="margin-bottom:0;"><label class="form-label">Database URL</label><input class="form-input" id="fb-db-url" placeholder="https://xxx-default-rtdb.firebaseio.com"></div>
+              <div class="form-group" style="margin-bottom:0;"><label class="form-label">Project ID</label><input class="form-input" id="fb-project-id" placeholder="my-draft-arena"></div>
             </div>
-            <div class="fb-hint">
-              📌 <a href="https://console.firebase.google.com" target="_blank">console.firebase.google.com</a> → 프로젝트 생성 → 웹 앱 추가 → 설정값 복붙<br>
-              Realtime Database 활성화 후 보안 규칙을 <code style="color:var(--gold);">{ "rules": { ".read": true, ".write": true } }</code> 로 설정
-            </div>
-            <div class="fb-skip-note">※ 비워두면 싱글 화면 모드로 동작합니다 (Firebase 없이도 사용 가능)</div>
+            <div class="fb-hint">📌 <a href="https://console.firebase.google.com" target="_blank">console.firebase.google.com</a> → 프로젝트 생성 → Realtime Database 활성화 → 웹앱 추가 → 설정값 복붙<br>
+            보안 규칙: <code style="color:var(--gold);">{ "rules": { ".read": true, ".write": true } }</code><br>
+            ※ 비워두면 싱글 모드로 동작합니다</div>
           </div>
         </div>
 
-        <!-- TEAMS -->
+        <!-- Teams -->
         <div>
-          <div class="setup-section-title">팀 설정</div>
-          <div class="form-row" style="margin-bottom:12px;">
-            <div class="form-group">
-              <label class="form-label">팀 수</label>
-              <input class="form-input" type="number" id="team-count-input" value="4" min="2" max="16" style="width:75px;">
-            </div>
-            <div class="form-group">
-              <label class="form-label">팀당 초기 포인트</label>
-              <input class="form-input" type="number" id="init-pts-input" value="1000" min="100" step="100" style="width:120px;">
-            </div>
+          <div class="sec-title">팀 설정</div>
+          <div style="display:flex;gap:9px;align-items:flex-end;flex-wrap:wrap;margin-bottom:11px;">
+            <div style="display:flex;flex-direction:column;gap:3px;"><label class="form-label">팀 수</label><input class="form-input" type="number" id="team-count" value="4" min="2" max="16" style="width:70px;"></div>
+            <div style="display:flex;flex-direction:column;gap:3px;"><label class="form-label">팀당 초기 포인트</label><input class="form-input" type="number" id="init-pts" value="1000" min="100" step="100" style="width:118px;"></div>
             <button class="btn btn-outline btn-sm" onclick="generateTeams()">팀 생성</button>
           </div>
           <div class="teams-grid" id="teams-grid"></div>
         </div>
 
-        <!-- PLAYERS -->
+        <!-- Players -->
         <div>
-          <div class="setup-section-title">선수 등록</div>
-          <div class="xlsx-drop" id="xlsx-drop"
-            onclick="document.getElementById('xlsx-file-input').click()"
-            ondragover="event.preventDefault();this.style.background='rgba(201,168,76,0.07)'"
+          <div class="sec-title">선수 등록</div>
+          <div class="xlsx-drop" onclick="document.getElementById('xlsx-input').click()"
+            ondragover="event.preventDefault();this.style.background='rgba(201,168,76,0.06)'"
             ondragleave="this.style.background=''"
-            ondrop="handleXlsxDrop(event)">
-            <input type="file" id="xlsx-file-input" accept=".xlsx,.xls,.csv" style="display:none;" onchange="handleXlsxFile(this.files[0])">
-            <div style="font-size:18px;margin-bottom:4px;opacity:0.5;">📊</div>
-            <div style="font-size:13px;color:var(--text-dim);">엑셀(.xlsx) 또는 CSV 드래그 / 클릭 업로드</div>
-            <div style="font-size:11px;color:var(--text-dim);margin-top:3px;">열 순서: <span style="color:var(--gold);">닉네임 | 포지션 | 점수 | 메모</span> (1행 헤더 자동 스킵)</div>
+            ondrop="handleDrop(event)">
+            <input type="file" id="xlsx-input" accept=".xlsx,.xls,.csv" style="display:none;" onchange="handleXlsxFile(this.files[0])">
+            <div style="font-size:15px;margin-bottom:2px;opacity:0.5;">📊</div>
+            <div style="font-size:12px;color:var(--text-dim);">엑셀(.xlsx) / CSV 업로드</div>
+            <div style="font-size:11px;color:var(--text-dim);margin-top:2px;">열 순서: <span style="color:var(--gold);">닉네임 | 포지션 | 점수 | 메모</span></div>
           </div>
           <div class="player-table-wrap">
             <table class="player-table">
-              <thead>
-                <tr>
-                  <th style="width:36px;">#</th>
-                  <th>닉네임</th><th>포지션</th>
-                  <th style="width:72px;">점수</th>
-                  <th>메모</th>
-                  <th style="width:56px;"></th>
-                </tr>
-              </thead>
+              <thead><tr><th style="width:30px;">#</th><th>닉네임</th><th>포지션</th><th style="width:65px;">점수</th><th>메모</th><th style="width:50px;"></th></tr></thead>
               <tbody id="player-tbody"></tbody>
               <tfoot>
-                <tr class="add-player-row">
+                <tr class="add-row">
                   <td></td>
-                  <td><input class="form-input" id="new-nick" placeholder="닉네임" style="width:100%;"></td>
-                  <td><input class="form-input" id="new-pos" placeholder="포지션" style="width:100%;"></td>
-                  <td><input class="form-input" id="new-score" type="number" placeholder="점수" style="width:100%;"></td>
-                  <td><input class="form-input" id="new-memo" placeholder="메모" style="width:100%;"></td>
+                  <td><input class="form-input" id="new-nick" placeholder="닉네임"></td>
+                  <td><input class="form-input" id="new-pos" placeholder="포지션"></td>
+                  <td><input class="form-input" id="new-score" type="number" placeholder="점수"></td>
+                  <td><input class="form-input" id="new-memo" placeholder="메모"></td>
                   <td><button class="btn btn-gold btn-sm" onclick="addPlayer()">추가</button></td>
                 </tr>
               </tfoot>
@@ -433,87 +390,88 @@ body::before {
         </div>
 
         <div style="display:flex;justify-content:space-between;align-items:center;">
-          <button class="btn btn-danger btn-sm" onclick="fullReset()">전체 초기화</button>
-          <button class="btn btn-gold" onclick="startAuction()" style="padding:11px 32px;font-size:14px;letter-spacing:1px;">경매 시작 →</button>
+          <div style="display:flex;gap:7px;">
+            <button class="btn btn-ghost btn-sm" onclick="showScreen('role-screen')">← 뒤로</button>
+            <button class="btn btn-danger btn-sm" onclick="fullReset()">전체 초기화</button>
+          </div>
+          <button class="btn btn-gold" onclick="startAuction()" style="padding:10px 26px;font-size:14px;">경매 시작 →</button>
         </div>
-
       </div>
     </div>
   </div>
 </div>
 
-<!-- ══════════════ AUCTION SCREEN ══════════════ -->
+<!-- ══════════════════════════════════
+     AUCTION SCREEN
+══════════════════════════════════ -->
 <div class="screen" id="auction-screen">
   <div class="topbar">
-    <div class="topbar-logo" onclick="goHome()" title="홈으로">DRAFT ARENA</div>
-    <div class="topbar-info">
-      <span id="topbar-round">라운드 —</span>
-      <span id="topbar-remain">남은 선수 —</span>
-      <div class="fb-status" id="fb-status">
-        <div class="fb-dot" id="fb-dot"></div>
-        <span id="fb-status-text">오프라인</span>
-      </div>
+    <div class="topbar-logo">DRAFT ARENA</div>
+    <div class="topbar-mid">
+      <b id="tb-round">라운드 —</b>
+      <b id="tb-remain">남은 선수 —</b>
+      <span><div class="fb-dot" id="fb-dot"></div> <span id="fb-txt" style="font-size:11px;color:var(--text-dim);">오프라인</span></span>
     </div>
-    <div class="topbar-actions">
-      <button class="btn btn-blue btn-sm" onclick="openRemainModal()">📋 남은 매물</button>
-      <button class="btn btn-outline btn-sm" onclick="toggleAdmin()">관리자</button>
+    <div class="topbar-right">
+      <div class="role-badge" id="my-badge"></div>
+      <button class="btn btn-blue btn-sm" onclick="openRemain()">📋 남은 매물</button>
       <button class="btn btn-ghost btn-sm" onclick="goResult()">결과 보기</button>
-      <button class="btn btn-ghost btn-sm" onclick="goHome()">🏠 홈</button>
+      <button class="btn btn-ghost btn-sm hidden" id="admin-btn" onclick="toggleAF()">관리자 ▾</button>
     </div>
   </div>
 
   <div class="auction-main">
-    <!-- LEFT: TEAMS -->
+    <!-- LEFT: teams -->
     <div class="sidebar sidebar-left">
-      <div class="sidebar-section" style="flex:1;overflow-y:auto;">
-        <div class="sidebar-title">팀 현황</div>
+      <div class="sb-sec" style="flex:1;overflow-y:auto;">
+        <div class="sb-title">팀 현황</div>
         <div id="teams-panel"></div>
       </div>
     </div>
 
     <!-- CENTER -->
-    <div class="center-stage" id="center-stage-wrap" style="flex-direction:column;justify-content:space-between;padding:0;">
-      <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:28px 24px;">
-        <div class="spotlight-glow"></div>
-        <div id="no-auction-msg" class="no-auction">선수를 선택해<br>경매를 시작하세요</div>
+    <div class="center-stage">
+      <div class="stage-inner">
+        <div class="stage-glow"></div>
+        <div id="no-auction" class="no-auction">선수를 선택해<br>경매를 시작하세요</div>
         <div id="spotlight" class="spotlight hidden">
-          <div class="player-card">
-            <div class="player-card-top">
-              <div class="player-avatar" id="sp-avatar">?</div>
+          <div class="pcard">
+            <div class="pcard-top">
+              <div class="pav" id="sp-av">?</div>
               <div style="flex:1;">
-                <div class="player-name-display" id="sp-name">—</div>
-                <div class="player-role-display" id="sp-role">—</div>
+                <div class="pname" id="sp-name">—</div>
+                <div class="prole" id="sp-role">—</div>
               </div>
               <div style="text-align:right;">
-                <div class="player-score-big" id="sp-score">—</div>
-                <div class="player-score-label">SCORE</div>
+                <div class="pscore" id="sp-score">—</div>
+                <div class="pscore-lbl">SCORE</div>
               </div>
             </div>
-            <div id="sp-memo" style="padding:10px 24px 0;font-size:12px;color:var(--text-dim);display:none;"></div>
-            <div class="score-bar-wrap" style="margin-top:10px;">
-              <div class="score-bar-track"><div class="score-bar-fill" id="sp-bar" style="width:0%"></div></div>
+            <div id="sp-memo" class="pmemo hidden"></div>
+            <div class="pbar-wrap" style="margin-top:9px;">
+              <div class="pbar-track"><div class="pbar-fill" id="sp-bar" style="width:0%"></div></div>
             </div>
-            <div class="bid-history">
-              <div class="bid-hist-title">입찰 내역</div>
-              <div class="bid-hist-list" id="bid-hist-list">
-                <div style="font-size:12px;color:var(--text-dim);padding:3px 8px;">입찰 내역 없음</div>
-              </div>
+            <div class="bh-wrap">
+              <div class="bh-title">입찰 내역</div>
+              <div class="bh-list" id="bh-list"><div style="font-size:11px;color:var(--text-dim);padding:2px 7px;">입찰 내역 없음</div></div>
             </div>
-            <div class="bid-section">
-              <div style="display:flex;justify-content:space-between;align-items:flex-end;">
+            <div class="bid-area">
+              <div class="ba-top">
                 <div>
-                  <div class="bid-label-sm">현재 최고 입찰</div>
-                  <div class="bid-amount-big" id="bid-amount">—</div>
-                  <div class="bid-by-text">입찰팀: <span id="bid-by-team" style="font-weight:500;">—</span></div>
+                  <div class="ba-lbl">현재 최고 입찰</div>
+                  <div class="ba-amount" id="ba-amount">—</div>
+                  <div class="ba-by">입찰팀: <span id="ba-team">—</span></div>
                 </div>
-                <div class="admin-bid-controls" id="admin-bid-controls">
-                  <div class="bid-input-row">
-                    <input class="bid-input-field" type="number" id="bid-value-input" placeholder="포인트">
-                    <select class="form-input" id="bid-team-select" style="height:36px;font-size:12px;"></select>
+                <!-- admin controls -->
+                <div class="admin-ctrl hidden" id="admin-ctrl">
+                  <div class="act-row">
+                    <input class="bid-field" type="number" id="bid-pts" placeholder="포인트">
+                    <select class="form-input" id="bid-team-sel" style="height:33px;font-size:11px;width:105px;"></select>
                   </div>
-                  <div style="display:flex;gap:7px;">
+                  <div class="act-row">
                     <button class="btn btn-outline btn-sm" onclick="placeBid()">입찰 등록</button>
                     <button class="btn btn-success btn-sm" onclick="confirmSold()">낙찰 ✓</button>
+                    <button class="btn btn-warn btn-sm" onclick="confirmPass()">유찰 ✗</button>
                   </div>
                 </div>
               </div>
@@ -522,504 +480,464 @@ body::before {
         </div>
       </div>
 
-      <!-- VIEWER BID BAR (Firebase mode, non-admin) -->
-      <div class="viewer-bid-bar hidden" id="viewer-bid-bar">
-        <span class="vb-label">내 팀:</span>
-        <select class="form-input" id="viewer-team-select" style="height:34px;font-size:12px;width:130px;"></select>
-        <input class="bid-input-field" type="number" id="viewer-bid-input" placeholder="입찰 포인트" style="width:120px;">
-        <button class="btn btn-gold btn-sm" onclick="placeViewerBid()">입찰하기</button>
-        <span style="font-size:11px;color:var(--text-dim);margin-left:4px;">현재: <span id="viewer-current-bid" style="color:var(--gold);font-family:'Rajdhani',sans-serif;font-weight:700;">—</span></span>
+      <!-- captain bid bar -->
+      <div class="captain-bar hidden" id="captain-bar">
+        <span class="cap-label">입찰:</span>
+        <div class="cap-team" id="cap-team-disp" style="color:var(--gold);">—</div>
+        <input class="bid-field" type="number" id="cap-pts" placeholder="포인트" style="width:108px;">
+        <button class="btn btn-gold btn-sm" onclick="captainBid()">입찰하기</button>
+        <span class="cap-cur">현재: <span id="cap-cur-pts">—</span></span>
       </div>
     </div>
 
-    <!-- RIGHT: QUEUE -->
+    <!-- RIGHT: queue -->
     <div class="sidebar sidebar-right">
-      <div class="sidebar-section" style="flex:1;overflow-y:auto;">
-        <div class="sidebar-title">경매 대기열</div>
+      <div class="sb-sec" style="flex:1;overflow-y:auto;">
+        <div class="sb-title">경매 대기열</div>
         <div id="queue-list"></div>
       </div>
     </div>
   </div>
 </div>
 
-<!-- ══════════════ RESULT SCREEN ══════════════ -->
+<!-- ══════════════════════════════════
+     RESULT SCREEN
+══════════════════════════════════ -->
 <div class="screen" id="result-screen">
   <div class="topbar">
-    <div class="topbar-logo" onclick="goHome()">DRAFT ARENA</div>
-    <div class="topbar-actions">
-      <button class="btn btn-outline btn-sm" onclick="backToAuction()">← 경매로</button>
-      <button class="btn btn-ghost btn-sm" onclick="goHome()">🏠 홈</button>
+    <div class="topbar-logo">DRAFT ARENA</div>
+    <div class="topbar-right">
+      <button class="btn btn-outline btn-sm" onclick="showScreen('auction-screen')">← 경매로</button>
+      <button class="btn btn-ghost btn-sm" onclick="showScreen('role-screen')">🏠 홈</button>
     </div>
   </div>
-  <div style="width:100%;max-width:960px;margin:0 auto;padding:36px 24px 60px;">
-    <div class="result-title">DRAFT RESULT</div>
-    <div class="result-teams-grid" id="result-grid"></div>
+  <div style="width:100%;max-width:960px;margin:0 auto;padding:28px 20px 60px;">
+    <div class="res-wrap">
+      <div class="res-title">DRAFT RESULT</div>
+      <div class="res-grid" id="res-grid"></div>
+    </div>
   </div>
 </div>
 
-<!-- ══════════════ REMAINING MODAL ══════════════ -->
-<div class="modal-overlay" id="remain-modal">
+<!-- remain modal -->
+<div class="modal-bg" id="remain-modal">
   <div class="modal-box">
-    <div class="modal-header">
+    <div class="modal-head">
       <div class="modal-title">남은 매물</div>
-      <button class="modal-close" onclick="closeRemainModal()">✕</button>
+      <button class="modal-close" onclick="closeRemain()">✕</button>
     </div>
     <div class="modal-body">
-      <div style="font-size:12px;color:var(--text-dim);margin-bottom:12px;">클릭하면 해당 선수로 경매가 시작됩니다 (관리자 전용)</div>
+      <div style="font-size:11px;color:var(--text-dim);margin-bottom:9px;" id="remain-hint"></div>
       <div class="remain-grid" id="remain-grid"></div>
     </div>
   </div>
 </div>
 
-<!-- ADMIN PANEL -->
-<div class="admin-panel" id="admin-panel">
-  <div class="admin-panel-title">관리자 패널</div>
-  <div class="admin-btn-grid">
-    <button class="btn btn-ghost btn-sm" onclick="openRemainModal();hideAdminPanel()">남은 매물 보기</button>
-    <button class="btn btn-outline btn-sm" onclick="showScreen('setup-screen');hideAdminPanel()">선수/팀 수정</button>
-    <button class="btn btn-ghost btn-sm" onclick="resetCurrentBid()">입찰 초기화</button>
+<!-- admin float -->
+<div class="admin-float" id="admin-float">
+  <div class="af-title">관리자 패널</div>
+  <div class="af-btns">
+    <button class="btn btn-ghost btn-sm" onclick="openRemain();closeAF()">남은 매물 보기</button>
+    <button class="btn btn-outline btn-sm" onclick="showScreen('setup-screen');closeAF()">선수/팀 수정</button>
+    <button class="btn btn-ghost btn-sm" onclick="resetBid()">입찰 초기화</button>
     <button class="btn btn-danger btn-sm" onclick="cancelAuction()">경매 취소</button>
   </div>
 </div>
 
-<!-- Firebase SDKs -->
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-
 <script>
-// ══════════════════════════════════
-//  STATE
-// ══════════════════════════════════
-let state = { teams:[], players:[], currentPlayer:null, currentBids:[], round:0, soldLog:[] };
+// ════════════════════════════
+//  CONSTANTS & STATE
+// ════════════════════════════
+const COLORS=['#C94C4C','#4C8BC9','#4CB87A','#C9A84C','#8B4CC9','#C94C8B','#4CC9C9','#C97A4C','#7AC94C','#4C7AC9','#C9884C','#884CC9'];
+const CNAMES=['레드','블루','그린','골드','퍼플','핑크','시안','오렌지','라임','네이비','앰버','바이올렛'];
+
+let me = { role:null, nick:'', teamName:'' };
+let S  = { teams:[], players:[], curIdx:null, bids:[], round:0 };
 let playerList = [];
 let fbDB = null;
-let isAdmin = false;  // set true on setup screen (the person who starts auction)
-let auctionRef = null;
 
-const COLORS = ['#C94C4C','#4C8BC9','#4CB87A','#C9A84C','#8B4CC9','#C94C8B','#4CC9C9','#C97A4C','#7AC94C','#4C7AC9','#C9884C','#884CC9'];
-const COLOR_NAMES = ['레드','블루','그린','골드','퍼플','핑크','시안','오렌지','라임','네이비','앰버','바이올렛'];
+// ════════════════════════════
+//  ROLE SELECT
+// ════════════════════════════
+function pickRole(role) {
+  me.role = role;
+  ['admin','captain','spectator'].forEach(r => {
+    document.getElementById('rc-'+r).classList.toggle('selected', r===role);
+    document.getElementById('form-'+r).classList.toggle('hidden', r!==role);
+  });
+}
 
-// ══════════════════════════════════
-//  SETUP
-// ══════════════════════════════════
-function generateTeams() {
-  const n = Math.min(parseInt(document.getElementById('team-count-input').value)||4, 16);
-  const pts = parseInt(document.getElementById('init-pts-input').value)||1000;
-  const grid = document.getElementById('teams-grid');
-  grid.innerHTML = '';
-  state.teams = [];
-  for (let i = 0; i < n; i++) {
-    state.teams.push({ name: COLOR_NAMES[i%COLORS.length]+' 팀', color: COLORS[i%COLORS.length], pts, initPts: pts, members:[] });
-    grid.innerHTML += `
-      <div class="team-input-card">
-        <input class="form-input" value="${COLOR_NAMES[i%COLORS.length]} 팀" oninput="state.teams[${i}].name=this.value" style="font-size:12px;">
-        <div class="team-color-row">
-          ${COLORS.map((c,ci)=>`<div class="color-dot ${ci===i%COLORS.length?'selected':''}" style="background:${c};" onclick="setTeamColor(${i},${ci},this)"></div>`).join('')}
-        </div>
-      </div>`;
+function goAdmin() {
+  const nick = document.getElementById('admin-nick').value.trim();
+  if (!nick) { showToast('닉네임을 입력하세요'); return; }
+  me.nick = nick;
+  showScreen('setup-screen');
+}
+
+function goCaptain() {
+  const team = document.getElementById('cap-team').value.trim();
+  const nick = document.getElementById('cap-nick').value.trim();
+  if (!team||!nick) { showToast('팀 이름과 닉네임을 입력하세요'); return; }
+  me.teamName = team; me.nick = nick;
+  // Try to connect Firebase from session
+  if (!connectFbFromSession()) { showToast('관리자가 먼저 경매를 시작해야 합니다'); return; }
+  applyRoleUI();
+  showScreen('auction-screen');
+  showToast(`${team} 팀장으로 입장했습니다`);
+}
+
+function goSpectator() {
+  me.nick = document.getElementById('spec-nick').value.trim() || '관전자';
+  connectFbFromSession();
+  applyRoleUI();
+  showScreen('auction-screen');
+  showToast('관전자로 입장했습니다');
+}
+
+function applyRoleUI() {
+  const badge = document.getElementById('my-badge');
+  if (me.role==='admin') {
+    badge.textContent = '⚙ 관리자 · '+me.nick; badge.className='role-badge admin';
+    document.getElementById('admin-btn').classList.remove('hidden');
+    document.getElementById('admin-ctrl').classList.remove('hidden');
+  } else if (me.role==='captain') {
+    badge.textContent = '🎮 '+me.teamName+' · '+me.nick; badge.className='role-badge captain';
+    document.getElementById('captain-bar').classList.remove('hidden');
+    document.getElementById('cap-team-disp').textContent = me.teamName;
+  } else {
+    badge.textContent = '👁 '+me.nick; badge.className='role-badge spectator';
   }
 }
-function setTeamColor(ti,ci,el){
-  state.teams[ti].color=COLORS[ci];
-  el.closest('.team-input-card').querySelectorAll('.color-dot').forEach(d=>d.classList.remove('selected'));
-  el.classList.add('selected');
-}
 
+// ════════════════════════════
+//  SETUP
+// ════════════════════════════
+function generateTeams() {
+  const n = Math.min(parseInt(document.getElementById('team-count').value)||4, 16);
+  const pts = parseInt(document.getElementById('init-pts').value)||1000;
+  S.teams = [];
+  const g = document.getElementById('teams-grid'); g.innerHTML='';
+  for (let i=0;i<n;i++) {
+    S.teams.push({name:CNAMES[i%COLORS.length]+' 팀',color:COLORS[i%COLORS.length],pts,initPts:pts,members:[]});
+    g.innerHTML+=`<div class="team-card-input">
+      <input class="form-input" value="${CNAMES[i%COLORS.length]} 팀" oninput="S.teams[${i}].name=this.value" style="font-size:12px;">
+      <div class="color-row">${COLORS.map((c,ci)=>`<div class="cdot ${ci===i%COLORS.length?'on':''}" style="background:${c};" onclick="setColor(${i},${ci},this)"></div>`).join('')}</div>
+    </div>`;
+  }
+}
+function setColor(ti,ci,el){S.teams[ti].color=COLORS[ci];el.closest('.team-card-input').querySelectorAll('.cdot').forEach(d=>d.classList.remove('on'));el.classList.add('on');}
 function renderPlayerTable(){
-  document.getElementById('player-tbody').innerHTML = playerList.map((p,i)=>`
+  document.getElementById('player-tbody').innerHTML=playerList.map((p,i)=>`
     <tr>
       <td style="color:var(--text-dim);font-family:'Rajdhani',sans-serif;">${i+1}</td>
-      <td><input class="form-input" value="${p.nick}" oninput="playerList[${i}].nick=this.value" style="width:100%;font-size:12px;"></td>
-      <td><input class="form-input" value="${p.pos||''}" oninput="playerList[${i}].pos=this.value" style="width:100%;font-size:12px;"></td>
-      <td><input class="form-input" type="number" value="${p.score}" oninput="playerList[${i}].score=+this.value" style="width:100%;font-size:12px;"></td>
-      <td><input class="form-input" value="${p.memo||''}" oninput="playerList[${i}].memo=this.value" style="width:100%;font-size:12px;"></td>
-      <td><button class="btn btn-ghost btn-sm" onclick="removePlayer(${i})" style="color:var(--red);border-color:var(--red);">삭제</button></td>
+      <td><input class="form-input" value="${p.nick}" oninput="playerList[${i}].nick=this.value" style="font-size:12px;"></td>
+      <td><input class="form-input" value="${p.pos||''}" oninput="playerList[${i}].pos=this.value" style="font-size:12px;"></td>
+      <td><input class="form-input" type="number" value="${p.score}" oninput="playerList[${i}].score=+this.value" style="font-size:12px;"></td>
+      <td><input class="form-input" value="${p.memo||''}" oninput="playerList[${i}].memo=this.value" style="font-size:12px;"></td>
+      <td><button class="btn btn-ghost btn-sm" onclick="playerList.splice(${i},1);renderPlayerTable()" style="color:var(--red);border-color:var(--red);">삭제</button></td>
     </tr>`).join('');
 }
 function addPlayer(){
   const nick=document.getElementById('new-nick').value.trim();
   if(!nick){showToast('닉네임을 입력하세요');return;}
   playerList.push({nick,pos:document.getElementById('new-pos').value.trim(),score:parseInt(document.getElementById('new-score').value)||50,memo:document.getElementById('new-memo').value.trim(),sold:false,soldTo:null,soldPts:0});
-  renderPlayerTable();
-  ['new-nick','new-pos','new-score','new-memo'].forEach(id=>document.getElementById(id).value='');
+  renderPlayerTable();['new-nick','new-pos','new-score','new-memo'].forEach(id=>document.getElementById(id).value='');
 }
-function removePlayer(i){ playerList.splice(i,1); renderPlayerTable(); }
-
 function fullReset(){
-  if(!confirm('모든 데이터를 초기화할까요?')) return;
-  playerList=[];
-  state={teams:[],players:[],currentPlayer:null,currentBids:[],round:0,soldLog:[]};
-  renderPlayerTable(); generateTeams();
+  if(!confirm('모든 데이터를 초기화할까요?'))return;
+  playerList=[];S={teams:[],players:[],curIdx:null,bids:[],round:0};
+  renderPlayerTable();generateTeams();
+  if(fbDB)fbDB.ref('auction').remove();
   showToast('초기화 완료');
 }
 
-// ══════════════════════════════════
-//  FIREBASE INIT
-// ══════════════════════════════════
-function initFirebase(){
-  const apiKey = document.getElementById('fb-api-key').value.trim();
-  const authDomain = document.getElementById('fb-auth-domain').value.trim();
-  const dbURL = document.getElementById('fb-db-url').value.trim();
-  const projectId = document.getElementById('fb-project-id').value.trim();
-  if(!apiKey||!dbURL) return false;
+// ════════════════════════════
+//  FIREBASE
+// ════════════════════════════
+function connectFb(cfg) {
   try {
     if(firebase.apps.length) firebase.apps.forEach(a=>a.delete());
-    firebase.initializeApp({ apiKey, authDomain, databaseURL: dbURL, projectId });
-    fbDB = firebase.database();
+    firebase.initializeApp(cfg);
+    fbDB=firebase.database();
+    sessionStorage.setItem('fb_cfg',JSON.stringify(cfg));
+    listenFirebase();
+    fbDB.ref('.info/connected').on('value',s=>setFbUI(s.val()===true));
     return true;
-  } catch(e){ showToast('Firebase 연결 실패: '+e.message); return false; }
+  } catch(e){showToast('Firebase 오류: '+e.message);return false;}
 }
-
-function setupFirebaseListeners(){
-  if(!fbDB) return;
-  auctionRef = fbDB.ref('auction');
-  auctionRef.on('value', snap => {
-    const data = snap.val();
-    if(!data) return;
-    // Sync bids from Firebase
-    if(data.currentBids !== undefined){
-      state.currentBids = data.currentBids || [];
-      renderBidHistory();
-      if(state.currentBids.length){
-        const top = state.currentBids[0];
-        document.getElementById('bid-amount').textContent = top.pts+' pt';
-        const byEl = document.getElementById('bid-by-team');
-        byEl.textContent = top.teamName;
-        byEl.style.color = top.teamColor;
-        document.getElementById('viewer-current-bid').textContent = top.pts+' pt';
-      }
+function connectFbFromSession(){
+  const s=sessionStorage.getItem('fb_cfg');
+  if(!s)return false;
+  return connectFb(JSON.parse(s));
+}
+function listenFirebase(){
+  fbDB.ref('auction').on('value',snap=>{
+    const d=snap.val(); if(!d)return;
+    if(d.teams){d.teams.forEach((t,i)=>{if(S.teams[i]){S.teams[i].pts=t.pts;S.teams[i].members=t.members||[];}});renderTeamsPanel();}
+    if(d.players){d.players.forEach((p,i)=>{if(S.players[i])Object.assign(S.players[i],p);});renderQueue();}
+    if(d.bids!==undefined){S.bids=d.bids||[];renderBidHist();updateBidDisplay();}
+    if(d.round!==undefined){S.round=d.round;updateTopbar();}
+    if('curIdx' in d){
+      S.curIdx=d.curIdx;
+      if(d.curIdx!==null&&S.players[d.curIdx]){S.currentPlayer=S.players[d.curIdx];renderSpotlight(S.currentPlayer);renderQueue();}
+      else{S.currentPlayer=null;document.getElementById('spotlight').classList.add('hidden');document.getElementById('no-auction').classList.remove('hidden');renderQueue();}
     }
-    if(data.currentPlayerIdx !== undefined && data.currentPlayerIdx !== null){
-      const p = state.players[data.currentPlayerIdx];
-      if(p && (!state.currentPlayer || state.currentPlayer.nick !== p.nick)){
-        state.currentPlayer = p;
-        renderSpotlight(p);
-        renderQueue();
-      }
-    }
-    if(data.soldLog) state.soldLog = data.soldLog;
-    if(data.teams) {
-      data.teams.forEach((t,i)=>{ if(state.teams[i]){ state.teams[i].pts=t.pts; state.teams[i].members=t.members||[]; }});
-      renderTeamsPanel();
-    }
-    setFbStatus(true);
+    setFbUI(true);
   });
-  fbDB.ref('.info/connected').on('value', snap => setFbStatus(snap.val()===true));
+}
+function fbSet(path,data){if(fbDB)fbDB.ref('auction/'+path).set(data);}
+function setFbUI(on){
+  document.getElementById('fb-dot').className='fb-dot'+(on?' on':'');
+  document.getElementById('fb-txt').textContent=on?'실시간 연결':'연결 끊김';
 }
 
-function setFbStatus(connected){
-  const dot = document.getElementById('fb-dot');
-  const txt = document.getElementById('fb-status-text');
-  if(connected){ dot.className='fb-dot connected'; txt.textContent='실시간 연결'; }
-  else { dot.className='fb-dot error'; txt.textContent='연결 끊김'; }
-}
-
-function pushToFirebase(path, data){
-  if(!fbDB) return;
-  fbDB.ref('auction/'+path).set(data);
-}
-
-// ══════════════════════════════════
+// ════════════════════════════
 //  START AUCTION
-// ══════════════════════════════════
+// ════════════════════════════
 function startAuction(){
-  if(!state.teams.length){showToast('팀을 먼저 생성하세요');return;}
+  if(!S.teams.length){showToast('팀을 먼저 생성하세요');return;}
   if(!playerList.length){showToast('선수를 등록하세요');return;}
-  isAdmin = true;
-  state.players = playerList.map(p=>({...p}));
-  state.round=0; state.soldLog=[];
-  state.teams.forEach(t=>{t.pts=t.initPts;t.members=[];});
+  S.players=playerList.map(p=>({...p}));
+  S.teams.forEach(t=>{t.pts=t.initPts;t.members=[];});
+  S.round=0;S.bids=[];S.currentPlayer=null;S.curIdx=null;
 
-  const fbConnected = initFirebase();
-  showScreen('auction-screen');
-  renderTeamsPanel(); renderQueue(); updateTopbar();
-  renderTeamSelect();
-
-  if(fbConnected){
-    setupFirebaseListeners();
-    // Push initial state
-    pushToFirebase('teams', state.teams.map(t=>({pts:t.pts,members:t.members})));
-    pushToFirebase('currentBids', []);
-    pushToFirebase('currentPlayerIdx', null);
-    document.getElementById('viewer-bid-bar').classList.remove('hidden');
-    renderViewerTeamSelect();
-    showToast('🔥 Firebase 실시간 연결됨!');
-  } else {
-    document.getElementById('fb-status').style.display='none';
-    showToast('싱글 모드로 시작합니다');
+  const apiKey=document.getElementById('fb-api-key').value.trim();
+  const dbURL=document.getElementById('fb-db-url').value.trim();
+  let fbOk=false;
+  if(apiKey&&dbURL){
+    fbOk=connectFb({apiKey,authDomain:document.getElementById('fb-auth-domain').value.trim(),databaseURL:dbURL,projectId:document.getElementById('fb-project-id').value.trim()});
+    if(fbOk){
+      fbSet('teams',S.teams.map(t=>({pts:t.pts,members:t.members})));
+      fbSet('players',S.players);
+      fbSet('bids',[]);fbSet('curIdx',null);fbSet('round',0);
+      showToast('🔥 Firebase 실시간 연결됨!');
+    }
   }
+  if(!fbOk){document.getElementById('fb-txt').textContent='싱글 모드';showToast('싱글 모드로 시작');}
+
+  applyRoleUI();
+  showScreen('auction-screen');
+  renderTeamsPanel();renderQueue();updateTopbar();renderBidTeamSel();
 }
 
-// ══════════════════════════════════
+// ════════════════════════════
 //  AUCTION LOGIC
-// ══════════════════════════════════
-function showScreen(id){
-  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
-  document.getElementById(id).classList.add('active');
-}
-function goHome(){
-  if(confirm('홈으로 돌아가면 현재 진행 상황이 유지됩니다. 계속할까요?'))
-    showScreen('setup-screen');
-}
-function backToAuction(){ showScreen('auction-screen'); }
-function goResult(){
-  showScreen('result-screen');
-  document.getElementById('result-grid').innerHTML = state.teams.map(t=>`
-    <div class="result-team-card">
-      <div class="result-team-header" style="border-top:3px solid ${t.color};">
-        <div class="result-team-name" style="color:${t.color};">${t.name}</div>
-        <div class="result-team-spent">사용: ${t.initPts-t.pts}pt / 잔여: ${t.pts}pt</div>
-      </div>
-      <div class="result-players">
-        ${t.members.length
-          ? t.members.map(m=>`<div class="result-player-row"><span>${m.nick} <span style="font-size:10px;color:var(--text-dim);">${m.pos||''}</span></span><span class="result-player-pts">${m.soldPts}pt</span></div>`).join('')
-          : '<div style="font-size:12px;color:var(--text-dim);">낙찰 없음</div>'}
-      </div>
-    </div>`).join('');
-}
+// ════════════════════════════
+function showScreen(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));document.getElementById(id).classList.add('active');}
 
 function updateTopbar(){
-  const remain = state.players.filter(p=>!p.sold).length;
-  document.getElementById('topbar-round').textContent=`라운드 ${state.round}`;
-  document.getElementById('topbar-remain').textContent=`남은 선수 ${remain}명`;
+  document.getElementById('tb-round').textContent='라운드 '+S.round;
+  document.getElementById('tb-remain').textContent='남은 선수 '+S.players.filter(p=>!p.sold).length+'명';
 }
 
 function renderTeamsPanel(){
-  const maxPts = Math.max(...state.teams.map(t=>t.initPts),1);
-  document.getElementById('teams-panel').innerHTML = state.teams.map((t,i)=>`
-    <div class="team-card ${state.currentBids.length&&state.currentBids[0].team===i?'top-bidder':''}">
-      <div class="team-card-stripe" style="background:${t.color};"></div>
-      <div class="team-card-header">
-        <span class="team-card-name" style="color:${t.color};">${t.name}</span>
-        <span class="team-card-pts">${t.pts}</span>
-      </div>
-      <div class="pts-bar-track"><div class="pts-bar-fill" style="width:${(t.pts/maxPts*100).toFixed(1)}%;background:${t.color};opacity:0.7;"></div></div>
-      ${t.members.length?`<div class="team-members">${t.members.map(m=>`<span class="team-member-chip">${m.nick}</span>`).join('')}</div>`:''}
+  const mx=Math.max(...S.teams.map(t=>t.initPts),1);
+  const top=S.bids.length?S.bids[0].team:-1;
+  document.getElementById('teams-panel').innerHTML=S.teams.map((t,i)=>`
+    <div class="tc ${i===top?'top':''}">
+      <div class="tc-stripe" style="background:${t.color};"></div>
+      <div class="tc-hdr"><span class="tc-name" style="color:${t.color};">${t.name}</span><span class="tc-pts">${t.pts}</span></div>
+      <div class="pts-track"><div class="pts-fill" style="width:${(t.pts/mx*100).toFixed(1)}%;background:${t.color};opacity:0.7;"></div></div>
+      ${t.members.length?`<div class="tc-members">${t.members.map(m=>`<span class="tc-chip">${m.nick}</span>`).join('')}</div>`:''}
     </div>`).join('');
 }
 
 function renderQueue(){
   let idx=0;
-  document.getElementById('queue-list').innerHTML = state.players.map((p,i)=>{
-    if(!p.sold) idx++;
-    const isCur = state.currentPlayer&&state.currentPlayer===p;
-    return `<div class="queue-item ${isCur?'current':''} ${p.sold?'sold':''}" onclick="${p.sold?'':'selectPlayer('+i+')'}">
-      <div class="queue-num">${p.sold?'✓':idx}</div>
-      <div class="queue-name">${p.nick}${p.pos?` <span style="font-size:10px;color:var(--text-dim);">${p.pos}</span>`:''}</div>
-      ${p.sold?`<span class="queue-sold-tag">낙찰</span>`:`<span class="queue-score-badge">${p.score}</span>`}
+  document.getElementById('queue-list').innerHTML=S.players.map((p,i)=>{
+    if(!p.sold)idx++;
+    const isCur=S.curIdx===i;
+    const canClick=!p.sold&&me.role==='admin';
+    return `<div class="qi ${isCur?'current':''} ${p.sold?'sold':''} ${canClick?'clickable':''}" ${canClick?`onclick="selectPlayer(${i})"`:''}>
+      <div class="qi-num">${p.sold?'✓':idx}</div>
+      <div class="qi-name">${p.nick}${p.pos?` <span style="font-size:9px;color:var(--text-dim);">${p.pos}</span>`:''}</div>
+      ${p.sold?`<span class="qi-sold">낙찰</span>`:`<span class="qi-score">${p.score}</span>`}
     </div>`;
   }).join('');
 }
 
-function renderTeamSelect(){
-  document.getElementById('bid-team-select').innerHTML = state.teams.map((t,i)=>`<option value="${i}">${t.name}</option>`).join('');
-}
-function renderViewerTeamSelect(){
-  document.getElementById('viewer-team-select').innerHTML = state.teams.map((t,i)=>`<option value="${i}">${t.name}</option>`).join('');
+function renderBidTeamSel(){
+  document.getElementById('bid-team-sel').innerHTML=S.teams.map((t,i)=>`<option value="${i}">${t.name}</option>`).join('');
 }
 
 function selectPlayer(i){
-  const p = state.players[i];
-  if(p.sold) return;
-  state.currentPlayer=p; state.currentBids=[]; state.round++;
-  renderSpotlight(p); renderQueue(); updateTopbar(); renderBidHistory();
-  document.getElementById('bid-amount').textContent='—';
-  document.getElementById('bid-by-team').textContent='—';
-  document.getElementById('viewer-current-bid').textContent='—';
-  renderTeamSelect(); hideAdminPanel(); closeRemainModal();
-  if(fbDB){
-    pushToFirebase('currentPlayerIdx', i);
-    pushToFirebase('currentBids', []);
-  }
+  if(me.role!=='admin')return;
+  const p=S.players[i]; if(p.sold)return;
+  S.currentPlayer=p;S.curIdx=i;S.bids=[];S.round++;
+  renderSpotlight(p);renderQueue();updateTopbar();renderBidHist();clearBidDisplay();
+  closeRemain();closeAF();
+  fbSet('curIdx',i);fbSet('bids',[]);fbSet('round',S.round);
 }
 
 function renderSpotlight(p){
-  document.getElementById('no-auction-msg').classList.add('hidden');
+  document.getElementById('no-auction').classList.add('hidden');
   document.getElementById('spotlight').classList.remove('hidden');
-  document.getElementById('sp-avatar').textContent = p.nick.slice(0,2);
-  document.getElementById('sp-name').textContent = p.nick;
-  document.getElementById('sp-role').textContent = p.pos||'포지션 미정';
-  document.getElementById('sp-score').textContent = p.score;
-  document.getElementById('sp-bar').style.width = Math.min(p.score,100)+'%';
-  const memo = document.getElementById('sp-memo');
-  if(p.memo){ memo.textContent=p.memo; memo.style.display='block'; } else { memo.style.display='none'; }
+  document.getElementById('sp-av').textContent=p.nick.slice(0,2);
+  document.getElementById('sp-name').textContent=p.nick;
+  document.getElementById('sp-role').textContent=p.pos||'포지션 미정';
+  document.getElementById('sp-score').textContent=p.score;
+  document.getElementById('sp-bar').style.width=Math.min(p.score,100)+'%';
+  const m=document.getElementById('sp-memo');
+  if(p.memo){m.textContent=p.memo;m.classList.remove('hidden');}else m.classList.add('hidden');
 }
 
+function renderBidHist(){
+  const l=document.getElementById('bh-list');
+  if(!S.bids.length){l.innerHTML='<div style="font-size:11px;color:var(--text-dim);padding:2px 7px;">입찰 내역 없음</div>';return;}
+  l.innerHTML=S.bids.map(b=>`<div class="bh-item"><span style="color:${b.teamColor};font-weight:500;">${b.teamName}</span><span class="bh-pts">${b.pts} pt</span></div>`).join('');
+}
+
+function updateBidDisplay(){
+  if(!S.bids.length){clearBidDisplay();return;}
+  const top=S.bids[0];
+  document.getElementById('ba-amount').textContent=top.pts+' pt';
+  const el=document.getElementById('ba-team');el.textContent=top.teamName;el.style.color=top.teamColor;
+  document.getElementById('cap-cur-pts').textContent=top.pts+' pt';
+}
+function clearBidDisplay(){
+  document.getElementById('ba-amount').textContent='—';
+  document.getElementById('ba-team').textContent='—';
+  document.getElementById('ba-team').style.color='';
+  document.getElementById('cap-cur-pts').textContent='—';
+}
+
+// Admin bid
 function placeBid(){
-  if(!state.currentPlayer){showToast('선수를 먼저 선택하세요');return;}
-  const pts = parseInt(document.getElementById('bid-value-input').value);
-  const ti = parseInt(document.getElementById('bid-team-select').value);
+  if(!S.currentPlayer){showToast('선수를 먼저 선택하세요');return;}
+  const pts=parseInt(document.getElementById('bid-pts').value);
+  const ti=parseInt(document.getElementById('bid-team-sel').value);
   if(!pts||pts<=0){showToast('포인트를 입력하세요');return;}
-  const team = state.teams[ti];
-  if(pts>team.pts){showToast(`${team.name} 포인트 부족 (보유: ${team.pts}pt)`);return;}
-  if(state.currentBids.length&&pts<=state.currentBids[0].pts){showToast('현재 최고 입찰보다 높아야 합니다');return;}
-  const bid = {team:ti,teamName:team.name,teamColor:team.color,pts};
-  state.currentBids.unshift(bid);
-  document.getElementById('bid-amount').textContent=pts+' pt';
-  const byEl=document.getElementById('bid-by-team'); byEl.textContent=team.name; byEl.style.color=team.color;
-  document.getElementById('viewer-current-bid').textContent=pts+' pt';
-  renderBidHistory(); renderTeamsPanel();
-  document.getElementById('bid-value-input').value='';
-  showToast(`${team.name} — ${pts}pt 입찰 등록`);
-  if(fbDB) pushToFirebase('currentBids', state.currentBids);
+  const t=S.teams[ti];
+  if(pts>t.pts){showToast(`${t.name} 포인트 부족 (보유: ${t.pts}pt)`);return;}
+  if(S.bids.length&&pts<=S.bids[0].pts){showToast('현재 최고 입찰보다 높아야 합니다');return;}
+  S.bids.unshift({team:ti,teamName:t.name,teamColor:t.color,pts});
+  updateBidDisplay();renderBidHist();renderTeamsPanel();
+  document.getElementById('bid-pts').value='';
+  fbSet('bids',S.bids);
+  showToast(`${t.name} — ${pts}pt 입찰`);
 }
 
-// Viewer (non-admin) bid via Firebase
-function placeViewerBid(){
+// Captain bid
+function captainBid(){
   if(!fbDB){showToast('Firebase 연결이 필요합니다');return;}
-  if(!state.currentPlayer){showToast('경매 중인 선수가 없습니다');return;}
-  const pts = parseInt(document.getElementById('viewer-bid-input').value);
-  const ti = parseInt(document.getElementById('viewer-team-select').value);
+  if(!S.currentPlayer){showToast('경매 중인 선수가 없습니다');return;}
+  const pts=parseInt(document.getElementById('cap-pts').value);
   if(!pts||pts<=0){showToast('포인트를 입력하세요');return;}
-  const team = state.teams[ti];
-  if(pts>team.pts){showToast(`${team.name} 포인트 부족`);return;}
-  if(state.currentBids.length&&pts<=state.currentBids[0].pts){showToast('현재 최고 입찰보다 높아야 합니다');return;}
-  const bid = {team:ti,teamName:team.name,teamColor:team.color,pts};
-  const newBids = [bid,...state.currentBids];
-  pushToFirebase('currentBids', newBids);
-  document.getElementById('viewer-bid-input').value='';
-  showToast(`${team.name} — ${pts}pt 입찰!`);
+  const ti=S.teams.findIndex(t=>t.name===me.teamName);
+  if(ti===-1){showToast(`"${me.teamName}" 팀을 찾을 수 없습니다`);return;}
+  const t=S.teams[ti];
+  if(pts>t.pts){showToast(`포인트 부족 (보유: ${t.pts}pt)`);return;}
+  if(S.bids.length&&pts<=S.bids[0].pts){showToast('현재 최고 입찰보다 높아야 합니다');return;}
+  fbSet('bids',[{team:ti,teamName:t.name,teamColor:t.color,pts},...S.bids]);
+  document.getElementById('cap-pts').value='';
+  showToast(`${t.name} — ${pts}pt 입찰!`);
 }
 
-function renderBidHistory(){
-  const list = document.getElementById('bid-hist-list');
-  if(!state.currentBids.length){
-    list.innerHTML='<div style="font-size:12px;color:var(--text-dim);padding:3px 8px;">입찰 내역 없음</div>';return;
-  }
-  list.innerHTML = state.currentBids.map(b=>`
-    <div class="bid-hist-item">
-      <span class="bid-hist-team" style="color:${b.teamColor};">${b.teamName}</span>
-      <span class="bid-hist-amount">${b.pts} pt</span>
+// Admin: sold
+function confirmSold(){
+  if(!S.currentPlayer){showToast('선수를 먼저 선택하세요');return;}
+  if(!S.bids.length){showToast('입찰 내역이 없습니다');return;}
+  const top=S.bids[0],t=S.teams[top.team],p=S.currentPlayer;
+  t.pts-=top.pts;t.members.push({nick:p.nick,pos:p.pos,soldPts:top.pts});
+  p.sold=true;p.soldTo=top.team;p.soldPts=top.pts;
+  document.getElementById('sold-sub').textContent=`${p.nick} → ${t.name} (${top.pts}pt)`;
+  const ov=document.getElementById('sold-overlay');ov.classList.add('show');setTimeout(()=>ov.classList.remove('show'),2200);
+  fbSet('teams',S.teams.map(t=>({pts:t.pts,members:t.members})));
+  fbSet('players',S.players);fbSet('bids',[]);fbSet('curIdx',null);
+  S.currentPlayer=null;S.curIdx=null;S.bids=[];
+  document.getElementById('spotlight').classList.add('hidden');document.getElementById('no-auction').classList.remove('hidden');
+  clearBidDisplay();renderTeamsPanel();renderQueue();updateTopbar();closeAF();
+}
+
+// Admin: pass
+function confirmPass(){
+  if(!S.currentPlayer){showToast('선수를 먼저 선택하세요');return;}
+  document.getElementById('pass-sub').textContent=`${S.currentPlayer.nick} — 유찰`;
+  const ov=document.getElementById('pass-overlay');ov.classList.add('show');setTimeout(()=>ov.classList.remove('show'),1800);
+  fbSet('bids',[]);fbSet('curIdx',null);
+  S.currentPlayer=null;S.curIdx=null;S.bids=[];
+  document.getElementById('spotlight').classList.add('hidden');document.getElementById('no-auction').classList.remove('hidden');
+  clearBidDisplay();renderQueue();closeAF();
+  showToast('유찰 처리');
+}
+
+function resetBid(){S.bids=[];clearBidDisplay();renderBidHist();renderTeamsPanel();fbSet('bids',[]);showToast('입찰 초기화');}
+function cancelAuction(){
+  fbSet('bids',[]);fbSet('curIdx',null);
+  S.currentPlayer=null;S.curIdx=null;S.bids=[];
+  document.getElementById('spotlight').classList.add('hidden');document.getElementById('no-auction').classList.remove('hidden');
+  renderQueue();clearBidDisplay();closeAF();showToast('경매 취소');
+}
+
+function goResult(){
+  showScreen('result-screen');
+  document.getElementById('res-grid').innerHTML=S.teams.map(t=>`
+    <div class="res-card">
+      <div class="res-head" style="border-top:3px solid ${t.color};">
+        <div class="res-name" style="color:${t.color};">${t.name}</div>
+        <div class="res-spent">사용: ${t.initPts-t.pts}pt / 잔여: ${t.pts}pt</div>
+      </div>
+      <div class="res-players">
+        ${t.members.length?t.members.map(m=>`<div class="res-row"><span>${m.nick} <span style="font-size:10px;color:var(--text-dim);">${m.pos||''}</span></span><span class="res-pts">${m.soldPts}pt</span></div>`).join(''):'<div style="font-size:11px;color:var(--text-dim);">낙찰 없음</div>'}
+      </div>
     </div>`).join('');
 }
 
-function confirmSold(){
-  if(!state.currentPlayer){showToast('선수를 먼저 선택하세요');return;}
-  if(!state.currentBids.length){showToast('입찰 내역이 없습니다');return;}
-  const top=state.currentBids[0];
-  const team=state.teams[top.team];
-  const player=state.currentPlayer;
-  team.pts-=top.pts; team.members.push(player);
-  player.sold=true; player.soldTo=top.team; player.soldPts=top.pts;
-  state.soldLog.push({player:player.nick,team:team.name,pts:top.pts});
-  document.getElementById('sold-info').textContent=`${player.nick} → ${team.name} (${top.pts}pt)`;
-  const ov=document.getElementById('sold-overlay'); ov.classList.add('show');
-  setTimeout(()=>ov.classList.remove('show'),2200);
-  if(fbDB){
-    pushToFirebase('teams', state.teams.map(t=>({pts:t.pts,members:t.members})));
-    pushToFirebase('currentBids',[]);
-    pushToFirebase('currentPlayerIdx',null);
-    pushToFirebase('soldLog',state.soldLog);
-  }
-  state.currentPlayer=null; state.currentBids=[];
-  document.getElementById('spotlight').classList.add('hidden');
-  document.getElementById('no-auction-msg').classList.remove('hidden');
-  document.getElementById('bid-amount').textContent='—';
-  document.getElementById('bid-by-team').textContent='—';
-  document.getElementById('viewer-current-bid').textContent='—';
-  renderTeamsPanel(); renderQueue(); updateTopbar(); hideAdminPanel();
-}
-
-function resetCurrentBid(){
-  state.currentBids=[];
-  document.getElementById('bid-amount').textContent='—';
-  document.getElementById('bid-by-team').textContent='—';
-  renderBidHistory(); renderTeamsPanel();
-  if(fbDB) pushToFirebase('currentBids',[]);
-  showToast('입찰 내역 초기화');
-}
-function cancelAuction(){
-  state.currentPlayer=null; state.currentBids=[];
-  document.getElementById('spotlight').classList.add('hidden');
-  document.getElementById('no-auction-msg').classList.remove('hidden');
-  renderQueue(); hideAdminPanel();
-  if(fbDB){ pushToFirebase('currentBids',[]); pushToFirebase('currentPlayerIdx',null); }
-  showToast('경매 취소');
-}
-
-// ══════════════════════════════════
-//  REMAIN MODAL
-// ══════════════════════════════════
-function openRemainModal(){
-  const grid = document.getElementById('remain-grid');
-  const unsold = state.players.map((p,i)=>({p,i})).filter(({p})=>!p.sold);
-  if(!unsold.length){ grid.innerHTML='<div style="color:var(--text-dim);font-size:13px;">모든 선수가 낙찰됐습니다!</div>'; }
-  else {
-    grid.innerHTML = unsold.map(({p,i})=>`
-      <div class="remain-card" onclick="selectPlayer(${i});closeRemainModal();">
-        <div class="remain-card-name">${p.nick}</div>
-        <div class="remain-card-pos">${p.pos||'—'}</div>
-        <div class="remain-card-score">${p.score}점</div>
-        ${p.memo?`<div style="font-size:10px;color:var(--text-dim);margin-top:4px;">${p.memo}</div>`:''}
-      </div>`).join('');
-  }
+// ════════════════════════════
+//  MODALS
+// ════════════════════════════
+function openRemain(){
+  const isAdmin=me.role==='admin';
+  document.getElementById('remain-hint').textContent=isAdmin?'클릭하면 해당 선수로 경매 시작':'남은 선수 목록';
+  const unsold=S.players.map((p,i)=>({p,i})).filter(({p})=>!p.sold);
+  document.getElementById('remain-grid').innerHTML=unsold.length
+    ?unsold.map(({p,i})=>`<div class="rcard ${isAdmin?'clickable':''}" ${isAdmin?`onclick="selectPlayer(${i});closeRemain()"`:''}>
+        <div class="rc-name">${p.nick}</div><div class="rc-pos">${p.pos||'—'}</div>
+        <div class="rc-score">${p.score}점</div>
+        ${p.memo?`<div style="font-size:10px;color:var(--text-dim);margin-top:3px;">${p.memo}</div>`:''}
+      </div>`).join('')
+    :'<div style="color:var(--text-dim);font-size:13px;">모든 선수가 낙찰됐습니다!</div>';
   document.getElementById('remain-modal').classList.add('open');
 }
-function closeRemainModal(){ document.getElementById('remain-modal').classList.remove('open'); }
-document.getElementById('remain-modal').addEventListener('click', e=>{ if(e.target===e.currentTarget) closeRemainModal(); });
+function closeRemain(){document.getElementById('remain-modal').classList.remove('open');}
+document.getElementById('remain-modal').addEventListener('click',e=>{if(e.target===e.currentTarget)closeRemain();});
+function toggleAF(){document.getElementById('admin-float').classList.toggle('open');}
+function closeAF(){document.getElementById('admin-float').classList.remove('open');}
 
-// ══════════════════════════════════
-//  ADMIN PANEL
-// ══════════════════════════════════
-function toggleAdmin(){ document.getElementById('admin-panel').classList.toggle('visible'); }
-function hideAdminPanel(){ document.getElementById('admin-panel').classList.remove('visible'); }
-
-// ══════════════════════════════════
+// ════════════════════════════
 //  EXCEL UPLOAD
-// ══════════════════════════════════
-function handleXlsxDrop(e){
-  e.preventDefault(); document.getElementById('xlsx-drop').style.background='';
-  const file=e.dataTransfer.files[0]; if(file) handleXlsxFile(file);
-}
+// ════════════════════════════
+function handleDrop(e){e.preventDefault();e.currentTarget.style.background='';handleXlsxFile(e.dataTransfer.files[0]);}
 function handleXlsxFile(file){
-  if(!file) return;
-  const ext=file.name.split('.').pop().toLowerCase();
-  if(ext==='csv'){handleCSV(file);return;}
+  if(!file)return;
+  if(file.name.endsWith('.csv')){const r=new FileReader();r.onload=e=>importRows(e.target.result.split('\n').map(l=>l.split(',').map(c=>c.trim().replace(/^"|"$/g,''))));r.readAsText(file,'UTF-8');return;}
   if(!window.XLSX){showToast('잠시 후 다시 시도하세요');return;}
-  const reader=new FileReader();
-  reader.onload=e=>{
-    try{
-      const wb=XLSX.read(e.target.result,{type:'array'});
-      const ws=wb.Sheets[wb.SheetNames[0]];
-      importRows(XLSX.utils.sheet_to_json(ws,{header:1,defval:''}));
-    }catch{showToast('파일을 읽을 수 없습니다');}
-  };
-  reader.readAsArrayBuffer(file);
-}
-function handleCSV(file){
-  const reader=new FileReader();
-  reader.onload=e=>{
-    importRows(e.target.result.split('\n').map(l=>l.split(',').map(c=>c.trim().replace(/^"|"$/g,''))));
-  };
-  reader.readAsText(file,'UTF-8');
+  const r=new FileReader();
+  r.onload=e=>{try{const wb=XLSX.read(e.target.result,{type:'array'});importRows(XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]],{header:1,defval:''}));}catch{showToast('파일 읽기 실패');}};
+  r.readAsArrayBuffer(file);
 }
 function importRows(rows){
   const data=rows.slice(1).filter(r=>r[0]&&String(r[0]).trim());
-  if(!data.length){showToast('선수 데이터가 없습니다');return;}
-  let added=0;
-  data.forEach(r=>{
-    const nick=String(r[0]||'').trim(); if(!nick) return;
-    playerList.push({nick,pos:String(r[1]||'').trim(),score:parseInt(r[2])||50,memo:String(r[3]||'').trim(),sold:false,soldTo:null,soldPts:0});
-    added++;
-  });
-  renderPlayerTable();
-  showToast(`✓ 선수 ${added}명 불러오기 완료`);
-  document.getElementById('xlsx-file-input').value='';
+  if(!data.length){showToast('선수 데이터 없음');return;}
+  let n=0;
+  data.forEach(r=>{const nick=String(r[0]||'').trim();if(!nick)return;playerList.push({nick,pos:String(r[1]||'').trim(),score:parseInt(r[2])||50,memo:String(r[3]||'').trim(),sold:false,soldTo:null,soldPts:0});n++;});
+  renderPlayerTable();showToast(`✓ 선수 ${n}명 불러오기 완료`);
+  document.getElementById('xlsx-input').value='';
 }
 
-// ══════════════════════════════════
+// ════════════════════════════
 //  TOAST
-// ══════════════════════════════════
+// ════════════════════════════
 function showToast(msg){
-  const t=document.getElementById('toast');
-  t.textContent=msg; t.classList.add('show');
-  setTimeout(()=>t.classList.remove('show'),2300);
+  const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),2400);
 }
 
 // Init
-generateTeams();
-renderPlayerTable();
+generateTeams();renderPlayerTable();
 </script>
 </body>
 </html>
