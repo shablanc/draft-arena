@@ -3,22 +3,79 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>DRAFT ARENA</title>
-<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Noto+Sans+KR:wght@300;400;500;700&family=Rajdhani:wght@500;700&display=swap" rel="stylesheet">
+<title>제 5회 별당근</title>
+<link href="https://fonts.googleapis.com/css2?family=Jua&family=Noto+Sans+KR:wght@300;400;500;700&family=Rajdhani:wght@500;700&display=swap" rel="stylesheet">
 <style>
 :root {
   --gold:#C9A84C; --gold-light:#F0D080; --gold-dim:#7A5F28;
-  --bg:#080A0F; --bg2:#0D1018; --bg3:#12161F;
-  --border:rgba(201,168,76,0.2); --border-bright:rgba(201,168,76,0.55);
-  --text:#E8E0CC; --text-dim:#7A7060;
+  --bg:#05080F; --bg2:#0A0D18; --bg3:#0F1220;
+  --border:rgba(150,180,255,0.2); --border-bright:rgba(150,180,255,0.45);
+  --text:#DDE8FF; --text-dim:#6070A0;
   --red:#C94C4C; --green:#4CB87A; --blue:#4C8BC9;
+  --star1:#FFF9C4; --star2:#C8D8FF; --star3:#FFD6A5;
 }
 *{box-sizing:border-box;margin:0;padding:0;}
 html,body{width:100%;min-height:100vh;background:var(--bg);color:var(--text);font-family:'Noto Sans KR',sans-serif;overflow-x:hidden;}
 body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
-  background:radial-gradient(ellipse 80% 50% at 50% -10%,rgba(201,168,76,0.07) 0%,transparent 60%),
-  repeating-linear-gradient(0deg,transparent,transparent 39px,rgba(201,168,76,0.03) 39px,rgba(201,168,76,0.03) 40px),
-  repeating-linear-gradient(90deg,transparent,transparent 39px,rgba(201,168,76,0.03) 39px,rgba(201,168,76,0.03) 40px);}
+  background:
+    radial-gradient(ellipse 100% 60% at 50% 0%, rgba(30,40,120,0.8) 0%, transparent 70%),
+    radial-gradient(ellipse 60% 40% at 20% 80%, rgba(60,20,100,0.4) 0%, transparent 60%),
+    radial-gradient(ellipse 50% 30% at 80% 60%, rgba(20,60,120,0.3) 0%, transparent 60%),
+    linear-gradient(180deg, #05080F 0%, #080D1A 50%, #060810 100%);
+}
+/* 별 레이어 */
+body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
+  background-image:
+    radial-gradient(1px 1px at 10% 15%, #fff 0%, transparent 100%),
+    radial-gradient(1px 1px at 25% 8%, #C8D8FF 0%, transparent 100%),
+    radial-gradient(1.5px 1.5px at 40% 20%, #fff 0%, transparent 100%),
+    radial-gradient(1px 1px at 55% 5%, #FFF9C4 0%, transparent 100%),
+    radial-gradient(2px 2px at 70% 12%, #fff 0%, transparent 100%),
+    radial-gradient(1px 1px at 85% 18%, #C8D8FF 0%, transparent 100%),
+    radial-gradient(1px 1px at 15% 35%, #FFF9C4 0%, transparent 100%),
+    radial-gradient(1.5px 1.5px at 30% 42%, #fff 0%, transparent 100%),
+    radial-gradient(1px 1px at 50% 30%, #C8D8FF 0%, transparent 100%),
+    radial-gradient(1px 1px at 65% 38%, #fff 0%, transparent 100%),
+    radial-gradient(2px 2px at 78% 25%, #FFF9C4 0%, transparent 100%),
+    radial-gradient(1px 1px at 90% 33%, #fff 0%, transparent 100%),
+    radial-gradient(1px 1px at 5% 55%, #C8D8FF 0%, transparent 100%),
+    radial-gradient(1.5px 1.5px at 20% 62%, #fff 0%, transparent 100%),
+    radial-gradient(1px 1px at 35% 50%, #FFF9C4 0%, transparent 100%),
+    radial-gradient(1px 1px at 48% 68%, #fff 0%, transparent 100%),
+    radial-gradient(2px 2px at 60% 55%, #C8D8FF 0%, transparent 100%),
+    radial-gradient(1px 1px at 75% 70%, #fff 0%, transparent 100%),
+    radial-gradient(1px 1px at 88% 48%, #FFF9C4 0%, transparent 100%),
+    radial-gradient(1.5px 1.5px at 95% 60%, #fff 0%, transparent 100%),
+    radial-gradient(1px 1px at 8% 78%, #C8D8FF 0%, transparent 100%),
+    radial-gradient(1px 1px at 22% 85%, #fff 0%, transparent 100%),
+    radial-gradient(2px 2px at 38% 75%, #FFF9C4 0%, transparent 100%),
+    radial-gradient(1px 1px at 52% 82%, #fff 0%, transparent 100%),
+    radial-gradient(1px 1px at 67% 88%, #C8D8FF 0%, transparent 100%),
+    radial-gradient(1.5px 1.5px at 80% 78%, #fff 0%, transparent 100%),
+    radial-gradient(1px 1px at 93% 85%, #FFF9C4 0%, transparent 100%),
+    radial-gradient(1px 1px at 42% 92%, #fff 0%, transparent 100%),
+    radial-gradient(2px 2px at 58% 95%, #C8D8FF 0%, transparent 100%),
+    radial-gradient(1px 1px at 72% 90%, #fff 0%, transparent 100%);
+  animation: twinkle 4s ease-in-out infinite alternate;
+}
+@keyframes twinkle{
+  0%{opacity:0.6;}
+  25%{opacity:1;}
+  50%{opacity:0.7;}
+  75%{opacity:0.95;}
+  100%{opacity:0.5;}
+}
+/* 별똥별 */
+.shooting-star{position:fixed;top:0;left:0;width:2px;height:2px;background:#fff;border-radius:50%;pointer-events:none;z-index:0;}
+.shooting-star::after{content:'';position:absolute;top:0;right:0;width:80px;height:1px;background:linear-gradient(to left,transparent,rgba(255,255,255,0.8));transform-origin:right center;}
+.shooting-star:nth-child(1){animation:shoot1 6s linear 1s infinite;}
+.shooting-star:nth-child(2){animation:shoot1 8s linear 3.5s infinite;}
+.shooting-star:nth-child(3){animation:shoot1 7s linear 5s infinite;}
+@keyframes shoot1{
+  0%{transform:translate(110vw,-10px) rotate(210deg);opacity:1;}
+  70%{opacity:1;}
+  100%{transform:translate(-20vw,60vh) rotate(210deg);opacity:0;}
+}
 .screen{display:none;position:relative;z-index:1;min-height:100vh;}
 .screen.active{display:flex;flex-direction:column;}
 
@@ -26,7 +83,7 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
 .topbar{display:flex;align-items:center;justify-content:space-between;padding:0 24px;height:54px;
   border-bottom:1px solid var(--border);background:rgba(8,10,15,0.95);backdrop-filter:blur(12px);
   position:sticky;top:0;z-index:100;}
-.topbar-logo{font-family:'Bebas Neue',sans-serif;font-size:26px;letter-spacing:4px;color:var(--gold);}
+.topbar-logo{font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:3px;color:var(--star2);}
 .topbar-mid{display:flex;gap:16px;align-items:center;font-size:12px;color:var(--text-dim);}
 .topbar-mid b{color:var(--text);font-weight:500;}
 .topbar-right{display:flex;gap:8px;align-items:center;}
@@ -70,13 +127,13 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
 /* ══ ROLE SCREEN ══ */
 #role-screen{align-items:center;justify-content:center;padding:40px 20px;}
 .role-wrap{width:100%;max-width:540px;}
-.role-title{font-family:'Bebas Neue',sans-serif;font-size:54px;letter-spacing:8px;color:var(--gold);text-align:center;margin-bottom:4px;}
-.role-sub{text-align:center;font-size:13px;color:var(--text-dim);margin-bottom:36px;}
+.role-title{font-family:'Bebas Neue',sans-serif;font-size:54px;letter-spacing:6px;color:transparent;text-align:center;margin-bottom:6px;background:linear-gradient(135deg,#C8D8FF 0%,#ffffff 40%,#FFF9C4 70%,#FFD6A5 100%);-webkit-background-clip:text;background-clip:text;filter:drop-shadow(0 0 20px rgba(150,180,255,0.6));}
+.role-sub{text-align:center;font-size:13px;color:rgba(150,180,255,0.7);margin-bottom:36px;letter-spacing:2px;}
 .role-cards{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:28px;}
 .role-card{background:var(--bg2);border:2px solid var(--border);border-radius:6px;
   padding:22px 14px;text-align:center;cursor:pointer;transition:all 0.2s;}
-.role-card:hover{border-color:var(--border-bright);background:rgba(201,168,76,0.04);}
-.role-card.selected{border-color:var(--gold);background:rgba(201,168,76,0.08);}
+.role-card:hover{border-color:rgba(180,200,255,0.6);background:rgba(100,130,255,0.08);}
+.role-card.selected{border-color:rgba(200,216,255,0.8);background:rgba(100,130,255,0.12);box-shadow:0 0 20px rgba(150,180,255,0.2);}
 .rc-icon{font-size:30px;margin-bottom:8px;}
 .rc-name{font-size:14px;font-weight:700;margin-bottom:3px;}
 .rc-desc{font-size:11px;color:var(--text-dim);line-height:1.5;}
@@ -115,12 +172,12 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
 /* ══ ROLE SCREEN ══ */
 #role-screen{align-items:center;justify-content:flex-start;padding:40px 20px;overflow-y:auto;}
 .role-wrap{width:100%;max-width:540px;margin:0 auto;}
-.role-title{font-family:'Bebas Neue',sans-serif;font-size:54px;letter-spacing:8px;color:var(--gold);text-align:center;margin-bottom:4px;}
-.role-sub{text-align:center;font-size:13px;color:var(--text-dim);margin-bottom:36px;}
+.role-title{font-family:'Bebas Neue',sans-serif;font-size:54px;letter-spacing:6px;color:transparent;text-align:center;margin-bottom:6px;background:linear-gradient(135deg,#C8D8FF 0%,#ffffff 40%,#FFF9C4 70%,#FFD6A5 100%);-webkit-background-clip:text;background-clip:text;filter:drop-shadow(0 0 20px rgba(150,180,255,0.6));}
+.role-sub{text-align:center;font-size:13px;color:rgba(150,180,255,0.7);margin-bottom:36px;letter-spacing:2px;}
 .role-cards{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:28px;}
-.role-card{background:var(--bg2);border:2px solid var(--border);border-radius:6px;padding:22px 14px;text-align:center;cursor:pointer;transition:all 0.2s;}
-.role-card:hover{border-color:var(--border-bright);background:rgba(201,168,76,0.04);}
-.role-card.selected{border-color:var(--gold);background:rgba(201,168,76,0.08);}
+.role-card{background:rgba(10,13,30,0.8);border:2px solid rgba(100,130,220,0.25);border-radius:6px;padding:22px 14px;text-align:center;cursor:pointer;transition:all 0.2s;}
+.role-card:hover{border-color:rgba(180,200,255,0.6);background:rgba(100,130,255,0.08);}
+.role-card.selected{border-color:rgba(200,216,255,0.8);background:rgba(100,130,255,0.12);box-shadow:0 0 20px rgba(150,180,255,0.2);}
 .rc-icon{font-size:30px;margin-bottom:8px;}
 .rc-name{font-size:14px;font-weight:700;margin-bottom:3px;}
 .rc-desc{font-size:11px;color:var(--text-dim);line-height:1.5;}
@@ -278,6 +335,9 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
 </style>
 </head>
 <body>
+<div class="shooting-star"></div>
+<div class="shooting-star"></div>
+<div class="shooting-star"></div>
 
 <div class="toast" id="toast"></div>
 <div class="sold-overlay" id="sold-overlay">
@@ -292,8 +352,8 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
 ══════════════════════════════════ -->
 <div class="screen active" id="role-screen">
   <div class="role-wrap">
-    <div class="role-title">DRAFT ARENA</div>
-    <div class="role-sub">역할을 선택하고 경매에 참여하세요</div>
+    <div class="role-title">제 5회 별당근</div>
+    <div class="role-sub">✦ &nbsp; 최고의 팀을 완성하라! &nbsp; ✦</div>
 
     <div class="role-cards">
       <div class="role-card" id="rc-admin" onclick="pickRole('admin')">
@@ -435,7 +495,7 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
 ══════════════════════════════════ -->
 <div class="screen" id="auction-screen">
   <div class="topbar">
-    <div class="topbar-logo">DRAFT ARENA</div>
+    <div class="topbar-logo">✦ 제 5회 별당근 ✦</div>
     <div class="topbar-mid">
       <b id="tb-round">라운드 —</b>
       <b id="tb-remain">남은 선수 —</b>
@@ -535,7 +595,7 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
 ══════════════════════════════════ -->
 <div class="screen" id="result-screen">
   <div class="topbar">
-    <div class="topbar-logo">DRAFT ARENA</div>
+    <div class="topbar-logo">✦ 제 5회 별당근 ✦</div>
     <div class="topbar-right">
       <button class="btn btn-outline btn-sm" onclick="showScreen('auction-screen')">← 경매로</button>
       <button class="btn btn-ghost btn-sm" onclick="showScreen('role-screen')">🏠 홈</button>
@@ -870,18 +930,21 @@ function captainBid(){
   if(!fbDB){showToast('Firebase 연결이 필요합니다');return;}
   if(!S.currentPlayer){showToast('경매 중인 선수가 없습니다');return;}
   const input = document.getElementById('cap-pts');
+  const currentTop = S.bids.length ? S.bids[0].pts : 0;
   let pts = parseInt(input.value);
-  // 포인트 미입력 시 현재 최고 입찰 + 50
   if(!pts || pts <= 0){
-    const currentTop = S.bids.length ? S.bids[0].pts : 0;
-    pts = currentTop + 50;
-    input.value = pts;
+    // 빈칸이면 현재 최고 입찰 + 10
+    pts = currentTop + 10;
+  } else {
+    // 직접 입력 시 현재 최고 입찰 + 10 이상이어야 함
+    if(pts < currentTop + 10){
+      showToast(`최소 ${currentTop + 10}pt 이상 입력해야 합니다`);return;
+    }
   }
   const ti=S.teams.findIndex(t=>t.name===me.teamName);
   if(ti===-1){showToast(`"${me.teamName}" 팀을 찾을 수 없습니다`);return;}
   const t=S.teams[ti];
   if(pts>t.pts){showToast(`포인트 부족 (보유: ${t.pts}pt)`);return;}
-  if(S.bids.length&&pts<=S.bids[0].pts){showToast('현재 최고 입찰보다 높아야 합니다');return;}
   fbSet('bids',[{team:ti,teamName:t.name,teamColor:t.color,pts},...S.bids]);
   input.value='';
   showToast(`${t.name} — ${pts}pt 입찰!`);
