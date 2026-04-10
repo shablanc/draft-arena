@@ -696,30 +696,17 @@ function goCaptain() {
   if (pw !== ADMIN_PW) { showToast('비밀번호가 틀렸습니다'); return; }
   me.teamName = team; me.nick = nick;
   if (!connectFbFromSession()) { showToast('연결 실패. 잠시 후 다시 시도하세요'); return; }
-  // Firebase에서 팀/선수 정보 로드
-  fbDB.ref('auction').once('value', snap => {
-    const d = snap.val();
-    if (d && d.teamInfo) S.teams = d.teamInfo;
-    if (d && d.players) S.players = d.players;
-    applyRoleUI();
-    showScreen('auction-screen');
-    renderTeamsPanel(); renderQueue(); updateTopbar();
-    showToast(`${team} 팀장으로 입장했습니다`);
-  });
+  applyRoleUI();
+  showScreen('auction-screen');
+  showToast(`${team} 팀장으로 입장했습니다`);
 }
 
 function goSpectator() {
   me.nick = document.getElementById('spec-nick').value.trim() || '관전자';
   if (!connectFbFromSession()) { showToast('연결 실패. 잠시 후 다시 시도하세요'); return; }
-  fbDB.ref('auction').once('value', snap => {
-    const d = snap.val();
-    if (d && d.teamInfo) S.teams = d.teamInfo;
-    if (d && d.players) S.players = d.players;
-    applyRoleUI();
-    showScreen('auction-screen');
-    renderTeamsPanel(); renderQueue(); updateTopbar();
-    showToast('관전자로 입장했습니다');
-  });
+  applyRoleUI();
+  showScreen('auction-screen');
+  showToast('관전자로 입장했습니다');
 }
 
 function applyRoleUI() {
@@ -825,6 +812,7 @@ function connectFbFromSession(){
 function listenFirebase(){
   fbDB.ref('auction').on('value',snap=>{
     const d=snap.val(); if(!d)return;
+
     // 초기화 감지
     if(d.reset && me.role !== 'admin'){
       S={teams:[],players:[],curIdx:null,bids:[],round:0};
@@ -836,46 +824,72 @@ function listenFirebase(){
       showToast('관리자가 경매를 초기화했습니다');
       return;
     }
-    // 팀 동기화
-    if(d.teams){
-      d.teams.forEach((t,i)=>{
-        if(S.teams[i]){S.teams[i].pts=t.pts;S.teams[i].members=t.members||[];}
-      });
+
+    // 팀장/관전자: teamInfo로 팀 전체 정보 먼저 세팅
+    if(me.role !== 'admin' && d.teamInfo && Array.isArray(d.teamInfo)){
+      S.teams = d.teamInfo;
+    }
+
+    // teams (pts/members 업데이트)
+    if(d.teams && Array.isArray(d.teams)){
+      if(me.role !== 'admin' && S.teams.length === 0){
+        // teamInfo가 없을 경우 대비
+        S.teams = d.teams;
+      } else {
+        d.teams.forEach((t,i)=>{
+          if(S.teams[i]){
+            S.teams[i].pts = t.pts;
+            S.teams[i].members = t.members||[];
+          }
+        });
+      }
       renderTeamsPanel();
     }
-    // 선수 목록 동기화 (팀장/관전자도 선수 데이터 받기)
-    if(d.players){
+
+    // 선수 목록 동기화
+    if(d.players && Array.isArray(d.players)){
       if(me.role !== 'admin'){
-        // 팀장/관전자는 Firebase에서 선수 목록을 통째로 받아옴
         S.players = d.players;
       } else {
         d.players.forEach((p,i)=>{if(S.players[i])Object.assign(S.players[i],p);});
       }
       renderQueue();
     }
+
     // 입찰 동기화
-    if(d.bids!==undefined){S.bids=d.bids||[];renderBidHist();updateBidDisplay();}
+    if(d.bids !== undefined){
+      S.bids = d.bids || [];
+      renderBidHist();
+      updateBidDisplay();
+    }
+
     // 라운드 동기화
-    if(d.round!==undefined){S.round=d.round;updateTopbar();}
-    // 현재 선수 동기화
+    if(d.round !== undefined){
+      S.round = d.round;
+      updateTopbar();
+    }
+
+    // 현재 경매 선수 동기화 — 팀장/관전자에게도 카드 표시
     if('curIdx' in d){
-      S.curIdx=d.curIdx;
-      if(d.curIdx!==null&&S.players[d.curIdx]){
-        S.currentPlayer=S.players[d.curIdx];
+      S.curIdx = d.curIdx;
+      if(d.curIdx !== null && S.players[d.curIdx]){
+        S.currentPlayer = S.players[d.curIdx];
+        document.getElementById('no-auction').classList.add('hidden');
         renderSpotlight(S.currentPlayer);
+        // 팀장이면 입찰 UI 표시
+        const capBid = document.getElementById('captain-card-bid');
+        if(me.role === 'captain' && capBid) capBid.classList.remove('hidden');
         renderQueue();
       } else {
-        S.currentPlayer=null;
+        S.currentPlayer = null;
         document.getElementById('spotlight').classList.add('hidden');
         document.getElementById('no-auction').classList.remove('hidden');
+        const capBid = document.getElementById('captain-card-bid');
+        if(capBid) capBid.classList.add('hidden');
         renderQueue();
       }
     }
-    // 팀 정보도 동기화 (팀장/관전자용)
-    if(d.teamInfo && me.role !== 'admin'){
-      S.teams = d.teamInfo;
-      renderTeamsPanel();
-    }
+
     setFbUI(true);
   });
 }
