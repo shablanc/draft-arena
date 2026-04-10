@@ -767,7 +767,10 @@ function goHome(){
   if(confirm('홈으로 돌아가면 역할 선택 화면으로 이동합니다.\n경매 진행 중이라면 Firebase에 데이터는 유지됩니다.'))
     showScreen('role-screen');
 }
-document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));document.getElementById(id).classList.add('active');}
+function showScreen(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
 
 function updateTopbar(){
   document.getElementById('tb-round').textContent='라운드 '+S.round;
