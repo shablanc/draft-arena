@@ -859,11 +859,8 @@ function listenFirebase(){
 
     // 선수 목록 동기화
     if(d.players && Array.isArray(d.players)){
-      if(me.role !== 'admin'){
-        S.players = d.players;
-      } else {
-        d.players.forEach((p,i)=>{if(S.players[i])Object.assign(S.players[i],p);});
-      }
+      // 모든 역할 동일하게 Firebase 데이터로 덮어씌움
+      S.players = d.players.map(p=>({...p}));
       renderQueue();
     }
 
@@ -1090,35 +1087,53 @@ function confirmSold(){
   if(!S.bids.length){showToast('입찰 내역이 없습니다');return;}
   const top=S.bids[0],t=S.teams[top.team],p=S.currentPlayer;
   if(top.pts > t.pts){showToast(`${t.name} 당근이 부족합니다 (보유: ${t.pts}🥕)`);return;}
+
+  // 상태 업데이트
   t.pts = Math.max(0, t.pts - top.pts);
   t.members.push({nick:p.nick,pos:p.pos,soldPts:top.pts});
-  p.sold=true;p.soldTo=top.team;p.soldPts=top.pts;
-  // Firebase에 SOLD 신호 + 전체 상태 저장
-  fbSet('overlay', {type:'sold', text:`${p.nick} → ${t.name} (${top.pts}🥕)`, ts:Date.now()});
-  fbSet('teams',S.teams.map(t=>({pts:t.pts,members:t.members})));
-  fbSet('teamInfo',S.teams);
-  fbSet('players',S.players);fbSet('bids',[]);fbSet('curIdx',null);
-  // 관리자 본인 오버레이
-  showOverlay('sold', `${p.nick} → ${t.name} (${top.pts}🥕)`);
-  S.currentPlayer=null;S.curIdx=null;S.bids=[];
+  p.sold=true; p.soldTo=top.team; p.soldPts=top.pts;
+
+  const overlayData = {type:'sold', text:`${p.nick} → ${t.name} (${top.pts}🥕)`, ts:Date.now()};
+
+  // Firebase 원자적 업데이트 (한번에)
+  if(fbDB){
+    fbDB.ref('auction').update({
+      teams: S.teams.map(tm=>({pts:tm.pts, members:tm.members})),
+      teamInfo: S.teams,
+      players: S.players,
+      bids: [],
+      curIdx: null,
+      overlay: overlayData
+    });
+  }
+
+  // 관리자 본인 화면 처리
+  showOverlay('sold', overlayData.text);
+  S.currentPlayer=null; S.curIdx=null; S.bids=[];
   document.getElementById('spotlight').classList.add('hidden');
   document.getElementById('no-auction').classList.remove('hidden');
-  clearBidDisplay();renderTeamsPanel();renderQueue();updateTopbar();closeAF();
+  clearBidDisplay(); renderTeamsPanel(); renderQueue(); updateTopbar(); closeAF();
 }
 
 // Admin: pass
 function confirmPass(){
   if(!S.currentPlayer){showToast('선수를 먼저 선택하세요');return;}
   const nick = S.currentPlayer.nick;
-  // Firebase에 PASS 신호
-  fbSet('overlay', {type:'pass', text:`${nick} — 유찰`, ts:Date.now()});
-  fbSet('bids',[]);fbSet('curIdx',null);
-  // 관리자 본인 오버레이
-  showOverlay('pass', `${nick} — 유찰`);
-  S.currentPlayer=null;S.curIdx=null;S.bids=[];
+  const overlayData = {type:'pass', text:`${nick} — 유찰`, ts:Date.now()};
+
+  if(fbDB){
+    fbDB.ref('auction').update({
+      bids: [],
+      curIdx: null,
+      overlay: overlayData
+    });
+  }
+
+  showOverlay('pass', overlayData.text);
+  S.currentPlayer=null; S.curIdx=null; S.bids=[];
   document.getElementById('spotlight').classList.add('hidden');
   document.getElementById('no-auction').classList.remove('hidden');
-  clearBidDisplay();renderQueue();closeAF();
+  clearBidDisplay(); renderQueue(); closeAF();
 }
 
 function showOverlay(type, text){
