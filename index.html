@@ -290,6 +290,10 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
         <label class="form-label">관리자 닉네임</label>
         <input class="form-input" id="admin-nick" placeholder="예: 운영진">
       </div>
+      <div class="form-group">
+        <label class="form-label">관리자 비밀번호</label>
+        <input class="form-input" id="admin-pw" type="password" placeholder="비밀번호 입력">
+      </div>
       <button class="btn btn-gold btn-block" onclick="goAdmin()">설정 화면으로 →</button>
     </div>
 
@@ -303,6 +307,10 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
       <div class="form-group">
         <label class="form-label">본인 닉네임</label>
         <input class="form-input" id="cap-nick" placeholder="예: 홍길동">
+      </div>
+      <div class="form-group">
+        <label class="form-label">비밀번호</label>
+        <input class="form-input" id="cap-pw" type="password" placeholder="비밀번호 입력">
       </div>
       <button class="btn btn-blue btn-block" onclick="goCaptain()">경매 참여 →</button>
     </div>
@@ -331,21 +339,12 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
       </div>
       <div class="setup-body">
 
-        <!-- Firebase -->
-        <div>
-          <div class="sec-title">Firebase 연동 (실시간 멀티 입찰)</div>
-          <div class="fb-box">
-            <div class="fb-box-title">🔥 팀장들이 각자 입찰하려면 Firebase 설정이 필요해요</div>
-            <div class="fb-grid">
-              <div class="form-group" style="margin-bottom:0;"><label class="form-label">API Key</label><input class="form-input" id="fb-api-key" placeholder="AIzaSy..."></div>
-              <div class="form-group" style="margin-bottom:0;"><label class="form-label">Auth Domain</label><input class="form-input" id="fb-auth-domain" placeholder="xxx.firebaseapp.com"></div>
-              <div class="form-group" style="margin-bottom:0;"><label class="form-label">Database URL</label><input class="form-input" id="fb-db-url" placeholder="https://xxx-default-rtdb.firebaseio.com"></div>
-              <div class="form-group" style="margin-bottom:0;"><label class="form-label">Project ID</label><input class="form-input" id="fb-project-id" placeholder="my-draft-arena"></div>
-            </div>
-            <div class="fb-hint">📌 <a href="https://console.firebase.google.com" target="_blank">console.firebase.google.com</a> → 프로젝트 생성 → Realtime Database 활성화 → 웹앱 추가 → 설정값 복붙<br>
-            보안 규칙: <code style="color:var(--gold);">{ "rules": { ".read": true, ".write": true } }</code><br>
-            ※ 비워두면 싱글 모드로 동작합니다</div>
-          </div>
+        <!-- Firebase (자동 연결 - 숨김) -->
+        <div style="display:none;">
+          <input id="fb-api-key" value="AIzaSyCCxZR0Cqi1o4iX-svohstOSRe6bF1wRyQ">
+          <input id="fb-auth-domain" value="draft-arena-f46de.firebaseapp.com">
+          <input id="fb-db-url" value="https://draft-arena-f46de-default-rtdb.firebaseio.com">
+          <input id="fb-project-id" value="draft-arena-f46de">
         </div>
 
         <!-- Teams -->
@@ -550,6 +549,17 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script>
 // ════════════════════════════
+//  FIREBASE CONFIG (고정)
+// ════════════════════════════
+const FB_CONFIG = {
+  apiKey: "AIzaSyCCxZR0Cqi1o4iX-svohstOSRe6bF1wRyQ",
+  authDomain: "draft-arena-f46de.firebaseapp.com",
+  databaseURL: "https://draft-arena-f46de-default-rtdb.firebaseio.com",
+  projectId: "draft-arena-f46de"
+};
+const ADMIN_PW = "0410";
+
+// ════════════════════════════
 //  CONSTANTS & STATE
 // ════════════════════════════
 const COLORS=['#C94C4C','#4C8BC9','#4CB87A','#C9A84C','#8B4CC9','#C94C8B','#4CC9C9','#C97A4C','#7AC94C','#4C7AC9','#C9884C','#884CC9'];
@@ -573,7 +583,9 @@ function pickRole(role) {
 
 function goAdmin() {
   const nick = document.getElementById('admin-nick').value.trim();
+  const pw   = document.getElementById('admin-pw').value.trim();
   if (!nick) { showToast('닉네임을 입력하세요'); return; }
+  if (pw !== ADMIN_PW) { showToast('비밀번호가 틀렸습니다'); return; }
   me.nick = nick;
   showScreen('setup-screen');
 }
@@ -581,9 +593,10 @@ function goAdmin() {
 function goCaptain() {
   const team = document.getElementById('cap-team').value.trim();
   const nick = document.getElementById('cap-nick').value.trim();
+  const pw   = document.getElementById('cap-pw').value.trim();
   if (!team||!nick) { showToast('팀 이름과 닉네임을 입력하세요'); return; }
+  if (pw !== ADMIN_PW) { showToast('비밀번호가 틀렸습니다'); return; }
   me.teamName = team; me.nick = nick;
-  // Try to connect Firebase from session
   if (!connectFbFromSession()) { showToast('관리자가 먼저 경매를 시작해야 합니다'); return; }
   applyRoleUI();
   showScreen('auction-screen');
@@ -670,9 +683,7 @@ function connectFb(cfg) {
   } catch(e){showToast('Firebase 오류: '+e.message);return false;}
 }
 function connectFbFromSession(){
-  const s=sessionStorage.getItem('fb_cfg');
-  if(!s)return false;
-  return connectFb(JSON.parse(s));
+  return connectFb(FB_CONFIG);
 }
 function listenFirebase(){
   fbDB.ref('auction').on('value',snap=>{
@@ -705,19 +716,15 @@ function startAuction(){
   S.teams.forEach(t=>{t.pts=t.initPts;t.members=[];});
   S.round=0;S.bids=[];S.currentPlayer=null;S.curIdx=null;
 
-  const apiKey=document.getElementById('fb-api-key').value.trim();
-  const dbURL=document.getElementById('fb-db-url').value.trim();
-  let fbOk=false;
-  if(apiKey&&dbURL){
-    fbOk=connectFb({apiKey,authDomain:document.getElementById('fb-auth-domain').value.trim(),databaseURL:dbURL,projectId:document.getElementById('fb-project-id').value.trim()});
-    if(fbOk){
-      fbSet('teams',S.teams.map(t=>({pts:t.pts,members:t.members})));
-      fbSet('players',S.players);
-      fbSet('bids',[]);fbSet('curIdx',null);fbSet('round',0);
-      showToast('🔥 Firebase 실시간 연결됨!');
-    }
+  const fbOk = connectFb(FB_CONFIG);
+  if(fbOk){
+    fbSet('teams',S.teams.map(t=>({pts:t.pts,members:t.members})));
+    fbSet('players',S.players);
+    fbSet('bids',[]);fbSet('curIdx',null);fbSet('round',0);
+    showToast('🔥 Firebase 실시간 연결됨!');
+  } else {
+    document.getElementById('fb-txt').textContent='싱글 모드';showToast('싱글 모드로 시작');
   }
-  if(!fbOk){document.getElementById('fb-txt').textContent='싱글 모드';showToast('싱글 모드로 시작');}
 
   applyRoleUI();
   showScreen('auction-screen');
