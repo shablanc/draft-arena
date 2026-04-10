@@ -354,6 +354,9 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
   <div class="role-wrap">
     <div class="role-title">제 5회 별당근</div>
     <div class="role-sub">✦ &nbsp; 최고의 팀을 완성하라! &nbsp; ✦</div>
+    <div style="text-align:center;margin-bottom:20px;">
+      <button class="btn btn-ghost btn-sm bgm-toggle-btn" onclick="toggleBGM()" style="letter-spacing:1px;">🎵 BGM</button>
+    </div>
 
     <div class="role-cards">
       <div class="role-card" id="rc-admin" onclick="pickRole('admin')">
@@ -504,6 +507,7 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
     <div class="topbar-right">
       <div class="role-badge" id="my-badge"></div>
       <button class="btn btn-blue btn-sm" onclick="openRemain()">📋 남은 매물</button>
+      <button class="btn btn-ghost btn-sm bgm-toggle-btn" id="bgm-btn" onclick="toggleBGM()">🎵 BGM</button>
       <button class="btn btn-ghost btn-sm" onclick="goResult()">결과 보기</button>
       <button class="btn btn-ghost btn-sm hidden" id="admin-btn" onclick="toggleAF()">관리자 ▾</button>
       <button class="btn btn-ghost btn-sm" onclick="goHome()">🏠 홈</button>
@@ -745,8 +749,112 @@ const SFX = {
 };
 
 // ════════════════════════════
-//  CONSTANTS & STATE
+//  BGM (가볍고 발랄한 별밤 BGM)
 // ════════════════════════════
+let bgmGainMaster = null;
+let bgmRunning = false;
+let bgmScheduled = [];
+
+function startBGM(){
+  if(bgmRunning) return;
+  bgmRunning = true;
+  const ctx = getAudio();
+
+  bgmGainMaster = ctx.createGain();
+  bgmGainMaster.gain.setValueAtTime(0, ctx.currentTime);
+  bgmGainMaster.gain.linearRampToValueAtTime(0.28, ctx.currentTime + 2.5);
+  bgmGainMaster.connect(ctx.destination);
+
+  // 피아노 음색 함수 — 배음 합성으로 맑고 청아한 소리
+  function pianoNote(freq, startTime, duration){
+    // 기본음 + 2배음 + 3배음 합성 (피아노 음색)
+    const harmonics = [
+      {mult:1,   vol:0.5},
+      {mult:2,   vol:0.15},
+      {mult:3,   vol:0.07},
+      {mult:4,   vol:0.03},
+    ];
+    harmonics.forEach(({mult, vol})=>{
+      const osc = ctx.createOscillator();
+      const g = ctx.createGain();
+      osc.type = 'sine';
+      osc.frequency.value = freq * mult;
+      // 피아노 특유의 어택-디케이 엔벨로프
+      g.gain.setValueAtTime(0, startTime);
+      g.gain.linearRampToValueAtTime(vol, startTime + 0.015); // 빠른 어택
+      g.gain.exponentialRampToValueAtTime(vol * 0.4, startTime + 0.3); // 디케이
+      g.gain.exponentialRampToValueAtTime(vol * 0.2, startTime + duration * 0.6); // 서스테인
+      g.gain.linearRampToValueAtTime(0, startTime + duration); // 릴리즈
+      osc.connect(g); g.connect(bgmGainMaster);
+      osc.start(startTime); osc.stop(startTime + duration + 0.05);
+      bgmScheduled.push(osc);
+    });
+  }
+
+  // 반짝반짝 작은별 — 아주 천천히 (♩=48)
+  const beat = 0.62;
+  const twinkle = [
+    {f:523.25,d:1},{f:523.25,d:1},{f:783.99,d:1},{f:783.99,d:1},
+    {f:880.00,d:1},{f:880.00,d:1},{f:783.99,d:2},
+    {f:698.46,d:1},{f:698.46,d:1},{f:659.25,d:1},{f:659.25,d:1},
+    {f:587.33,d:1},{f:587.33,d:1},{f:523.25,d:2},
+    {f:783.99,d:1},{f:783.99,d:1},{f:698.46,d:1},{f:698.46,d:1},
+    {f:659.25,d:1},{f:659.25,d:1},{f:587.33,d:2},
+    {f:783.99,d:1},{f:783.99,d:1},{f:698.46,d:1},{f:698.46,d:1},
+    {f:659.25,d:1},{f:659.25,d:1},{f:587.33,d:2},
+    {f:523.25,d:1},{f:523.25,d:1},{f:783.99,d:1},{f:783.99,d:1},
+    {f:880.00,d:1},{f:880.00,d:1},{f:783.99,d:2},
+    {f:698.46,d:1},{f:698.46,d:1},{f:659.25,d:1},{f:659.25,d:1},
+    {f:587.33,d:1},{f:587.33,d:1},{f:523.25,d:3},
+  ];
+  const loopDur = twinkle.reduce((s,n)=>s+n.d,0) * beat;
+
+  for(let loop=0; loop<10; loop++){
+    let t = ctx.currentTime + loop * loopDur;
+    twinkle.forEach(({f,d})=>{
+      pianoNote(f, t, d * beat * 0.92);
+      t += d * beat;
+    });
+  }
+
+  updateBGMBtn();
+}
+
+function stopBGM(){
+  if(!bgmRunning) return;
+  bgmRunning = false;
+  if(bgmGainMaster){
+    const ctx = getAudio();
+    bgmGainMaster.gain.setValueAtTime(bgmGainMaster.gain.value, ctx.currentTime);
+    bgmGainMaster.gain.linearRampToValueAtTime(0, ctx.currentTime + 0.5);
+    setTimeout(()=>{
+      bgmScheduled.forEach(n=>{ try{ n.stop(); }catch(e){} });
+      bgmScheduled = [];
+      try{ bgmGainMaster.disconnect(); }catch(e){}
+      bgmGainMaster = null;
+    }, 600);
+  }
+  updateBGMBtn();
+}
+
+function toggleBGM(){
+  if(bgmRunning){
+    stopBGM();
+    bgmUserDisabled = true;
+    showToast('🔇 BGM 꺼짐');
+  } else {
+    bgmUserDisabled = false;
+    startBGM();
+    showToast('🎵 BGM 켜짐');
+  }
+}
+
+function updateBGMBtn(){
+  // 켜져 있으면 "🔇 BGM" (누르면 꺼짐), 꺼져 있으면 "🎵 BGM" (누르면 켜짐)
+  document.querySelectorAll('.bgm-toggle-btn').forEach(btn=>{
+    btn.textContent = bgmRunning ? '🔇 BGM' : '🎵 BGM';
+  });
+}
 const COLORS=['#C94C4C','#4C8BC9','#4CB87A','#C9A84C','#8B4CC9','#C94C8B','#4CC9C9','#C97A4C','#7AC94C','#4C7AC9','#C9884C','#884CC9'];
 const CNAMES=['레드','블루','그린','골드','퍼플','핑크','시안','오렌지','라임','네이비','앰버','바이올렛'];
 
@@ -789,6 +897,7 @@ function goCaptain() {
   applyRoleUI();
   showScreen('auction-screen');
   showToast(`${team} 팀장으로 입장했습니다`);
+  
 }
 
 function goSpectator() {
@@ -798,6 +907,7 @@ function goSpectator() {
   applyRoleUI();
   showScreen('auction-screen');
   showToast('관전자로 입장했습니다');
+  
 }
 
 function applyRoleUI() {
@@ -1035,7 +1145,6 @@ function startAuction(){
   applyRoleUI();
   showScreen('auction-screen');
   renderTeamsPanel();renderQueue();updateTopbar();renderBidTeamSel();
-  // 1번 수정: 경매 화면 스크롤 최상단으로
   setTimeout(()=>{ window.scrollTo(0,0); document.getElementById('stage-inner').scrollTop=0; }, 50);
 }
 
@@ -1334,6 +1443,17 @@ function showToast(msg){
 
 // Init
 generateTeams();renderPlayerTable();
+
+// BGM 자동 시작 — 사이트 첫 클릭 시 자동으로 켜짐
+// (브라우저 보안 정책: 소리는 반드시 사용자 클릭 이후에만 재생 가능)
+let bgmUserDisabled = false; // 사용자가 직접 끈 경우 재시작 안 함
+document.addEventListener('click', function autoStart(e){
+  // BGM 버튼 클릭이면 toggleBGM이 처리하므로 스킵
+  if(e.target.classList.contains('bgm-toggle-btn')) return;
+  if(!bgmRunning && !bgmUserDisabled){
+    startBGM();
+  }
+}, true); // 캡처 단계에서 모든 클릭 감지
 </script>
 </body>
 </html>
