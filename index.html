@@ -103,6 +103,7 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
 .player-table td{padding:5px 9px;border-bottom:1px solid rgba(201,168,76,0.07);vertical-align:middle;}
 .player-table tr:hover td{background:rgba(201,168,76,0.04);}
 .add-row td{padding:7px 9px;}
+.player-table th:nth-child(4), .player-table td:nth-child(4){width:100px;}
 .xlsx-drop{border:1.5px dashed var(--border-bright);border-radius:4px;padding:13px 18px;margin-bottom:10px;text-align:center;cursor:pointer;transition:background 0.15s;}
 .xlsx-drop:hover{background:rgba(201,168,76,0.04);}
 .fb-box{background:var(--bg3);border:1px solid rgba(76,139,201,0.3);border-radius:3px;padding:13px 16px;}
@@ -401,14 +402,14 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
           </div>
           <div class="player-table-wrap">
             <table class="player-table">
-              <thead><tr><th style="width:30px;">#</th><th>닉네임</th><th>포지션</th><th style="width:65px;">점수</th><th>메모</th><th style="width:50px;"></th></tr></thead>
+              <thead><tr><th style="width:30px;">#</th><th>닉네임</th><th>포지션</th><th style="width:100px;">점수</th><th>메모</th><th style="width:50px;"></th></tr></thead>
               <tbody id="player-tbody"></tbody>
               <tfoot>
                 <tr class="add-row">
                   <td></td>
                   <td><input class="form-input" id="new-nick" placeholder="닉네임"></td>
                   <td><input class="form-input" id="new-pos" placeholder="포지션"></td>
-                  <td><input class="form-input" id="new-score" type="number" placeholder="점수"></td>
+                  <td><input class="form-input" id="new-score" type="number" placeholder="점수" style="width:100%;min-width:90px;"></td>
                   <td><input class="form-input" id="new-memo" placeholder="메모"></td>
                   <td><button class="btn btn-gold btn-sm" onclick="addPlayer()">추가</button></td>
                 </tr>
