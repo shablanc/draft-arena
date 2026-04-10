@@ -112,8 +112,8 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
 .fb-hint a{color:var(--blue);}
 
 /* ══ ROLE SCREEN ══ */
-#role-screen{align-items:center;justify-content:center;padding:40px 20px;}
-.role-wrap{width:100%;max-width:540px;}
+#role-screen{align-items:center;justify-content:flex-start;padding:40px 20px;overflow-y:auto;}
+.role-wrap{width:100%;max-width:540px;margin:0 auto;}
 .role-title{font-family:'Bebas Neue',sans-serif;font-size:54px;letter-spacing:8px;color:var(--gold);text-align:center;margin-bottom:4px;}
 .role-sub{text-align:center;font-size:13px;color:var(--text-dim);margin-bottom:36px;}
 .role-cards{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:28px;}
@@ -290,7 +290,7 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
      ROLE SELECT SCREEN
 ══════════════════════════════════ -->
 <div class="screen active" id="role-screen">
-  <div style="width:100%;max-width:540px;margin:0 auto;padding:56px 20px 40px;">
+  <div class="role-wrap">
     <div class="role-title">DRAFT ARENA</div>
     <div class="role-sub">역할을 선택하고 경매에 참여하세요</div>
 
