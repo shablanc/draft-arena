@@ -658,6 +658,93 @@ const FB_CONFIG = {
 const ADMIN_PW = "0410";
 
 // ════════════════════════════
+//  SOUND ENGINE (Web Audio API)
+// ════════════════════════════
+let audioCtx = null;
+function getAudio(){
+  if(!audioCtx) audioCtx = new (window.AudioContext||window.webkitAudioContext)();
+  return audioCtx;
+}
+
+function playTone(freq, type, duration, vol=0.3, delay=0){
+  try {
+    const ctx = getAudio();
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.connect(gain); gain.connect(ctx.destination);
+    osc.type = type;
+    osc.frequency.setValueAtTime(freq, ctx.currentTime + delay);
+    gain.gain.setValueAtTime(vol, ctx.currentTime + delay);
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + delay + duration);
+    osc.start(ctx.currentTime + delay);
+    osc.stop(ctx.currentTime + delay + duration);
+  } catch(e){}
+}
+
+function playNoise(duration, vol=0.15){
+  try {
+    const ctx = getAudio();
+    const bufSize = ctx.sampleRate * duration;
+    const buf = ctx.createBuffer(1, bufSize, ctx.sampleRate);
+    const data = buf.getChannelData(0);
+    for(let i=0;i<bufSize;i++) data[i] = Math.random()*2-1;
+    const src = ctx.createBufferSource();
+    const gain = ctx.createGain();
+    src.buffer = buf; src.connect(gain); gain.connect(ctx.destination);
+    gain.gain.setValueAtTime(vol, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + duration);
+    src.start(); src.stop(ctx.currentTime + duration);
+  } catch(e){}
+}
+
+const SFX = {
+  // 버튼 클릭 — 짧은 삑
+  click(){ playTone(880,'sine',0.08,0.15); },
+
+  // 로그인 — 경쾌한 두 음
+  login(){
+    playTone(440,'sine',0.12,0.2,0);
+    playTone(660,'sine',0.15,0.25,0.1);
+  },
+
+  // 선수 등장 — 두둥~ 극적인 등장
+  playerReveal(){
+    playTone(110,'sawtooth',0.15,0.3,0);
+    playTone(220,'sawtooth',0.12,0.25,0.12);
+    playTone(330,'square',0.1,0.2,0.22);
+    playTone(440,'sine',0.35,0.4,0.32);
+    playTone(550,'sine',0.25,0.3,0.45);
+  },
+
+  // 입찰 — 경쾌한 띵!
+  bid(){
+    playTone(600,'sine',0.06,0.2,0);
+    playTone(900,'sine',0.1,0.15,0.06);
+  },
+
+  // 낙찰 — 상승 팡파레 (도-미-솔-도↑)
+  sold(){
+    playTone(261,'square',0.18,0.35,0);
+    playTone(329,'square',0.18,0.35,0.15);
+    playTone(392,'square',0.18,0.35,0.30);
+    playTone(523,'square',0.22,0.5,0.45);
+    playTone(659,'sine',0.25,0.6,0.6);
+    playTone(784,'sine',0.3,0.8,0.75);
+    // 노이즈 폭죽
+    setTimeout(()=>playNoise(0.15,0.12), 750);
+    setTimeout(()=>playNoise(0.12,0.1), 900);
+  },
+
+  // 유찰 — 내려가는 실망음
+  pass(){
+    playTone(400,'sawtooth',0.15,0.3,0);
+    playTone(300,'sawtooth',0.15,0.28,0.15);
+    playTone(200,'sawtooth',0.2,0.35,0.3);
+    playTone(150,'sine',0.15,0.4,0.45);
+  }
+};
+
+// ════════════════════════════
 //  CONSTANTS & STATE
 // ════════════════════════════
 const COLORS=['#C94C4C','#4C8BC9','#4CB87A','#C9A84C','#8B4CC9','#C94C8B','#4CC9C9','#C97A4C','#7AC94C','#4C7AC9','#C9884C','#884CC9'];
@@ -672,6 +759,7 @@ let fbDB = null;
 //  ROLE SELECT
 // ════════════════════════════
 function pickRole(role) {
+  SFX.click();
   me.role = role;
   ['admin','captain','spectator'].forEach(r => {
     document.getElementById('rc-'+r).classList.toggle('selected', r===role);
@@ -683,7 +771,8 @@ function goAdmin() {
   const nick = document.getElementById('admin-nick').value.trim();
   const pw   = document.getElementById('admin-pw').value.trim();
   if (!nick) { showToast('닉네임을 입력하세요'); return; }
-  if (pw !== ADMIN_PW) { showToast('비밀번호가 틀렸습니다'); return; }
+  if (pw !== ADMIN_PW) { SFX.pass(); showToast('비밀번호가 틀렸습니다'); return; }
+  SFX.login();
   me.nick = nick;
   showScreen('setup-screen');
 }
@@ -693,9 +782,10 @@ function goCaptain() {
   const nick = document.getElementById('cap-nick').value.trim();
   const pw   = document.getElementById('cap-pw').value.trim();
   if (!team||!nick) { showToast('팀 이름과 닉네임을 입력하세요'); return; }
-  if (pw !== ADMIN_PW) { showToast('비밀번호가 틀렸습니다'); return; }
+  if (pw !== ADMIN_PW) { SFX.pass(); showToast('비밀번호가 틀렸습니다'); return; }
   me.teamName = team; me.nick = nick;
-  if (!connectFbFromSession()) { showToast('연결 실패. 잠시 후 다시 시도하세요'); return; }
+  if (!connectFbFromSession()) { SFX.pass(); showToast('연결 실패. 잠시 후 다시 시도하세요'); return; }
+  SFX.login();
   applyRoleUI();
   showScreen('auction-screen');
   showToast(`${team} 팀장으로 입장했습니다`);
@@ -703,7 +793,8 @@ function goCaptain() {
 
 function goSpectator() {
   me.nick = document.getElementById('spec-nick').value.trim() || '관전자';
-  if (!connectFbFromSession()) { showToast('연결 실패. 잠시 후 다시 시도하세요'); return; }
+  if (!connectFbFromSession()) { SFX.pass(); showToast('연결 실패. 잠시 후 다시 시도하세요'); return; }
+  SFX.login();
   applyRoleUI();
   showScreen('auction-screen');
   showToast('관전자로 입장했습니다');
@@ -832,6 +923,8 @@ function listenFirebase(){
     if(d.overlay && me.role !== 'admin'){
       const now = Date.now();
       if(now - d.overlay.ts < 5000){
+        if(d.overlay.type==='sold') SFX.sold();
+        else SFX.pass();
         showOverlay(d.overlay.type, d.overlay.text);
       }
     }
@@ -866,7 +959,10 @@ function listenFirebase(){
 
     // 입찰 동기화
     if(d.bids !== undefined){
+      const prevLen = S.bids.length;
       S.bids = d.bids || [];
+      // 새 입찰이 들어왔으면 효과음 (관리자는 직접 입력 시 이미 소리 냄)
+      if(S.bids.length > prevLen && me.role !== 'admin') SFX.bid();
       renderBidHist();
       updateBidDisplay();
     }
@@ -881,19 +977,26 @@ function listenFirebase(){
     if('curIdx' in d){
       S.curIdx = d.curIdx;
       if(d.curIdx !== null && S.players[d.curIdx]){
+        const isNew = S.curIdx !== d.curIdx;
         S.currentPlayer = S.players[d.curIdx];
         document.getElementById('no-auction').classList.add('hidden');
         renderSpotlight(S.currentPlayer);
+        if(isNew && me.role !== 'admin') SFX.playerReveal();
         // 팀장이면 입찰 UI 표시
         const capBid = document.getElementById('captain-card-bid');
         if(me.role === 'captain' && capBid) capBid.classList.remove('hidden');
         renderQueue();
       } else {
+        // 낙찰/유찰 후 — 선수 카드 완전히 숨기기
         S.currentPlayer = null;
         document.getElementById('spotlight').classList.add('hidden');
         document.getElementById('no-auction').classList.remove('hidden');
+        // 팀장 입찰 UI도 숨기기
         const capBid = document.getElementById('captain-card-bid');
         if(capBid) capBid.classList.add('hidden');
+        // 입찰 내역 초기화
+        clearBidDisplay();
+        renderBidHist();
         renderQueue();
       }
     }
@@ -932,6 +1035,8 @@ function startAuction(){
   applyRoleUI();
   showScreen('auction-screen');
   renderTeamsPanel();renderQueue();updateTopbar();renderBidTeamSel();
+  // 1번 수정: 경매 화면 스크롤 최상단으로
+  setTimeout(()=>{ window.scrollTo(0,0); document.getElementById('stage-inner').scrollTop=0; }, 50);
 }
 
 // ════════════════════════════
@@ -1001,6 +1106,7 @@ function renderBidTeamSel(){
 function selectPlayer(i){
   if(me.role!=='admin')return;
   const p=S.players[i]; if(p.sold)return;
+  SFX.playerReveal();
   S.currentPlayer=p;S.curIdx=i;S.bids=[];S.round++;
   renderSpotlight(p);renderQueue();updateTopbar();renderBidHist();clearBidDisplay();
   closeRemain();closeAF();
@@ -1050,6 +1156,7 @@ function placeBid(){
   if(pts<=0){showToast('0보다 큰 당근을 입력하세요');return;}
   if(S.bids.length&&pts<=S.bids[0].pts){showToast('현재 최고 입찰보다 높아야 합니다');return;}
   S.bids.unshift({team:ti,teamName:t.name,teamColor:t.color,pts});
+  SFX.bid();
   updateBidDisplay();renderBidHist();renderTeamsPanel();
   document.getElementById('bid-pts').value='';
   fbSet('bids',S.bids);
@@ -1077,6 +1184,7 @@ function captainBid(){
   const t=S.teams[ti];
   if(pts>t.pts){showToast(`당근 부족 (보유: ${t.pts}🥕)`);return;}
   fbSet('bids',[{team:ti,teamName:t.name,teamColor:t.color,pts},...S.bids]);
+  SFX.bid();
   input.value='';
   showToast(`${t.name} — ${pts}🥕 입찰!`);
 }
@@ -1108,6 +1216,7 @@ function confirmSold(){
   }
 
   // 관리자 본인 화면 처리
+  SFX.sold();
   showOverlay('sold', overlayData.text);
   S.currentPlayer=null; S.curIdx=null; S.bids=[];
   document.getElementById('spotlight').classList.add('hidden');
@@ -1129,6 +1238,7 @@ function confirmPass(){
     });
   }
 
+  SFX.pass();
   showOverlay('pass', overlayData.text);
   S.currentPlayer=null; S.curIdx=null; S.bids=[];
   document.getElementById('spotlight').classList.add('hidden');
