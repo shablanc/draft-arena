@@ -1471,9 +1471,8 @@ function placeBid(){
   if(t.members.length >= (t.maxMembers||4)){
     showToast(`❌ ${t.name}은 이미 ${t.maxMembers||4}명을 낙찰받았습니다`);return;
   }
-  // 최소 호가 체크
+  // 최소 호가 체크 (관리자는 면제)
   const minBid = S.currentPlayer?.minBid||0;
-  if(minBid>0 && pts<minBid){showToast(`최소 호가는 ${minBid}🥕 입니다`);return;}
   if(pts>t.pts){showToast(`${t.name} 당근 부족 (보유: ${t.pts}🥕)`);return;}
   if(pts<=0){showToast('0보다 큰 당근을 입력하세요');return;}
   if(S.bids.length&&pts<=S.bids[0].pts){showToast('현재 최고 입찰보다 높아야 합니다');return;}
