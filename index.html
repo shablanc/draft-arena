@@ -478,18 +478,18 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
               <input type="file" id="xlsx-input-t1" accept=".xlsx,.xls,.csv" style="display:none;" onchange="handleXlsxFile(this.files[0],'t1')">
               <div style="font-size:15px;margin-bottom:2px;opacity:0.5;">📊</div>
               <div style="font-size:12px;color:var(--text-dim);">1군 엑셀 업로드</div>
-              <div style="font-size:11px;color:var(--text-dim);margin-top:2px;">열 순서: <span style="color:var(--gold);">닉네임 | 포지션 | 점수 | 메모</span></div>
+              <div style="font-size:11px;color:var(--text-dim);margin-top:2px;">열 순서: <span style="color:var(--gold);">닉네임 | 포지션 | 점수 | 최소호가</span></div>
             </div>
             <div class="player-table-wrap">
               <table class="player-table">
-                <thead><tr><th style="width:30px;">#</th><th>닉네임</th><th>포지션</th><th style="width:100px;">점수</th><th>메모</th><th style="width:50px;"></th></tr></thead>
+                <thead><tr><th style="width:30px;">#</th><th>닉네임</th><th>포지션</th><th style="width:100px;">점수</th><th>최소호가</th><th style="width:50px;"></th></tr></thead>
                 <tbody id="player-tbody-t1"></tbody>
                 <tfoot><tr class="add-row">
                   <td></td>
                   <td><input class="form-input" id="new-nick-t1" placeholder="닉네임"></td>
                   <td><input class="form-input" id="new-pos-t1" placeholder="포지션"></td>
                   <td><input class="form-input" id="new-score-t1" type="number" placeholder="점수" style="width:100%;min-width:90px;"></td>
-                  <td><input class="form-input" id="new-memo-t1" placeholder="메모"></td>
+                  <td><input class="form-input" id="new-memo-t1" placeholder="최소호가(숫자)"></td>
                   <td><button class="btn btn-gold btn-sm" onclick="addPlayer('t1')">추가</button></td>
                 </tr></tfoot>
               </table>
@@ -505,18 +505,18 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
               <input type="file" id="xlsx-input-t2" accept=".xlsx,.xls,.csv" style="display:none;" onchange="handleXlsxFile(this.files[0],'t2')">
               <div style="font-size:15px;margin-bottom:2px;opacity:0.5;">📊</div>
               <div style="font-size:12px;color:var(--text-dim);">2군 엑셀 업로드</div>
-              <div style="font-size:11px;color:var(--text-dim);margin-top:2px;">열 순서: <span style="color:var(--gold);">닉네임 | 포지션 | 점수 | 메모</span></div>
+              <div style="font-size:11px;color:var(--text-dim);margin-top:2px;">열 순서: <span style="color:var(--gold);">닉네임 | 포지션 | 점수 | 최소호가</span></div>
             </div>
             <div class="player-table-wrap">
               <table class="player-table">
-                <thead><tr><th style="width:30px;">#</th><th>닉네임</th><th>포지션</th><th style="width:100px;">점수</th><th>메모</th><th style="width:50px;"></th></tr></thead>
+                <thead><tr><th style="width:30px;">#</th><th>닉네임</th><th>포지션</th><th style="width:100px;">점수</th><th>최소호가</th><th style="width:50px;"></th></tr></thead>
                 <tbody id="player-tbody-t2"></tbody>
                 <tfoot><tr class="add-row">
                   <td></td>
                   <td><input class="form-input" id="new-nick-t2" placeholder="닉네임"></td>
                   <td><input class="form-input" id="new-pos-t2" placeholder="포지션"></td>
                   <td><input class="form-input" id="new-score-t2" type="number" placeholder="점수" style="width:100%;min-width:90px;"></td>
-                  <td><input class="form-input" id="new-memo-t2" placeholder="메모"></td>
+                  <td><input class="form-input" id="new-memo-t2" placeholder="최소호가(숫자)"></td>
                   <td><button class="btn btn-gold btn-sm" onclick="addPlayer('t2')">추가</button></td>
                 </tr></tfoot>
               </table>
@@ -1100,7 +1100,7 @@ function renderPlayerTable(tier){
         <td><input class="form-input" value="${p.nick}" oninput="playerList['${t}'][${i}].nick=this.value" style="font-size:12px;"></td>
         <td><input class="form-input" value="${p.pos||''}" oninput="playerList['${t}'][${i}].pos=this.value" style="font-size:12px;"></td>
         <td><input class="form-input" type="number" value="${p.score}" oninput="playerList['${t}'][${i}].score=+this.value" style="font-size:12px;"></td>
-        <td><input class="form-input" value="${p.memo||''}" oninput="playerList['${t}'][${i}].memo=this.value" style="font-size:12px;"></td>
+        <td><input class="form-input" value="${p.memo||''}" oninput="playerList['${t}'][${i}].minBid=+this.value" style="font-size:12px;"></td>
         <td><button class="btn btn-ghost btn-sm" onclick="playerList['${t}'].splice(${i},1);renderPlayerTable('${t}')" style="color:var(--red);border-color:var(--red);">삭제</button></td>
       </tr>`).join('');
   });
@@ -1113,7 +1113,7 @@ function addPlayer(tier='t1'){
     nick, tier,
     pos:document.getElementById(`new-pos-${tier}`).value.trim(),
     score:parseInt(document.getElementById(`new-score-${tier}`).value)||50,
-    memo:document.getElementById(`new-memo-${tier}`).value.trim(),
+    minBid:parseInt(document.getElementById(`new-memo-${tier}`).value)||0,
     sold:false,soldTo:null,soldPts:0,passed:false
   });
   renderPlayerTable(tier);
@@ -1331,7 +1331,11 @@ function updateTopbar(){
 function renderTeamsPanel(){
   const mx=Math.max(...S.teams.map(t=>t.initPts),1);
   const top=S.bids.length?S.bids[0].team:-1;
-  document.getElementById('teams-panel').innerHTML=S.teams.map((t,i)=>`
+  document.getElementById('teams-panel').innerHTML=S.teams.map((t,i)=>{
+    // 1군/2군 멤버 분리
+    const t1members = t.members.filter(m=>m.tier==='t1'||!m.tier);
+    const t2members = t.members.filter(m=>m.tier==='t2');
+    return `
     <div class="tc ${i===top?'top':''}">
       <div class="tc-stripe" style="background:${t.color};"></div>
       <div class="tc-hdr">
@@ -1342,8 +1346,10 @@ function renderTeamsPanel(){
         </div>
       </div>
       <div class="pts-track"><div class="pts-fill" style="width:${Math.max(0,(t.pts/mx*100)).toFixed(1)}%;background:${t.color};opacity:0.7;"></div></div>
-      ${t.members.length?`<div class="tc-members">${t.members.map(m=>`<span class="tc-chip">${m.nick}</span>`).join('')}</div>`:''}
-    </div>`).join('');
+      ${t1members.length?`<div style="margin-top:5px;"><div style="font-size:9px;color:rgba(255,220,50,0.6);letter-spacing:1px;margin-bottom:3px;">⭐ 1군</div><div class="tc-members">${t1members.map(m=>`<span class="tc-chip" style="border:1px solid rgba(255,220,50,0.3);color:rgba(255,220,100,0.8);">${m.nick}</span>`).join('')}</div></div>`:''}
+      ${t2members.length?`<div style="margin-top:4px;"><div style="font-size:9px;color:rgba(150,180,255,0.6);letter-spacing:1px;margin-bottom:3px;">🌙 2군</div><div class="tc-members">${t2members.map(m=>`<span class="tc-chip" style="border:1px solid rgba(100,150,255,0.3);color:rgba(150,190,255,0.8);">${m.nick}</span>`).join('')}</div></div>`:''}
+    </div>`;
+  }).join('');
 }
 
 function renderQueue(){
@@ -1423,8 +1429,15 @@ function renderSpotlight(p){
   document.getElementById('sp-role').textContent=p.pos||'포지션 미정';
   document.getElementById('sp-score').textContent=p.score;
   document.getElementById('sp-bar').style.width=Math.min(p.score,100)+'%';
+  // 최소 호가 표시
   const m=document.getElementById('sp-memo');
-  if(p.memo){m.textContent=p.memo;m.classList.remove('hidden');}else m.classList.add('hidden');
+  if(p.minBid && p.minBid>0){
+    m.textContent=`최소 호가: ${p.minBid}🥕`;
+    m.style.color='rgba(201,168,76,0.8)';
+    m.classList.remove('hidden');
+  } else {
+    m.classList.add('hidden');
+  }
 }
 
 function renderBidHist(){
@@ -1458,6 +1471,9 @@ function placeBid(){
   if(t.members.length >= (t.maxMembers||4)){
     showToast(`❌ ${t.name}은 이미 ${t.maxMembers||4}명을 낙찰받았습니다`);return;
   }
+  // 최소 호가 체크
+  const minBid = S.currentPlayer?.minBid||0;
+  if(minBid>0 && pts<minBid){showToast(`최소 호가는 ${minBid}🥕 입니다`);return;}
   if(pts>t.pts){showToast(`${t.name} 당근 부족 (보유: ${t.pts}🥕)`);return;}
   if(pts<=0){showToast('0보다 큰 당근을 입력하세요');return;}
   if(S.bids.length&&pts<=S.bids[0].pts){showToast('현재 최고 입찰보다 높아야 합니다');return;}
@@ -1486,12 +1502,18 @@ function captainBid(){
 
   const input = document.getElementById('cap-pts');
   const currentTop = S.bids.length ? S.bids[0].pts : 0;
+  const minBid = S.currentPlayer?.minBid||0;
+  // 시작가는 최소호가와 현재 최고입찰+10 중 큰 값
+  const minRequired = Math.max(minBid, currentTop>0 ? currentTop+10 : minBid||10);
   let pts = parseInt(input.value);
   if(!pts || pts <= 0){
-    pts = currentTop + 10;
+    pts = minRequired;
   } else {
-    if(pts < currentTop + 10){
-      showToast(`최소 ${currentTop + 10}pt 이상 입력해야 합니다`);return;
+    if(currentTop>0 && pts < currentTop+10){
+      showToast(`최소 ${currentTop+10}🥕 이상 입력해야 합니다`);return;
+    }
+    if(minBid>0 && pts < minBid){
+      showToast(`최소 호가는 ${minBid}🥕 입니다`);return;
     }
   }
   if(pts>t.pts){showToast(`당근 부족 (보유: ${t.pts}🥕)`);return;}
@@ -1513,7 +1535,7 @@ function confirmSold(){
   }
 
   t.pts = Math.max(0, t.pts - top.pts);
-  t.members.push({nick:p.nick,pos:p.pos,soldPts:top.pts});
+  t.members.push({nick:p.nick, pos:p.pos, soldPts:top.pts, tier:p.tier||'t1'});
   p.sold=true; p.soldTo=top.team; p.soldPts=top.pts;
 
   const overlayData = {type:'sold', text:`${p.nick} → ${t.name} (${top.pts}🥕)`, ts:Date.now()};
@@ -1638,7 +1660,13 @@ function importRows(rows,tier='t1'){
   let n=0;
   data.forEach(r=>{
     const nick=String(r[0]||'').trim();if(!nick)return;
-    playerList[tier].push({nick,tier,pos:String(r[1]||'').trim(),score:parseInt(r[2])||50,memo:String(r[3]||'').trim(),sold:false,soldTo:null,soldPts:0,passed:false});
+    playerList[tier].push({
+      nick, tier,
+      pos:String(r[1]||'').trim(),
+      score:parseInt(r[2])||50,
+      minBid:parseInt(r[3])||0,  // 4번째 열 = 최소 호가
+      sold:false,soldTo:null,soldPts:0,passed:false
+    });
     n++;
   });
   renderPlayerTable(tier);
