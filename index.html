@@ -445,22 +445,23 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
           <div class="sec-title">팀 설정</div>
           <div style="display:flex;gap:9px;align-items:flex-end;flex-wrap:wrap;margin-bottom:11px;">
             <div style="display:flex;flex-direction:column;gap:3px;"><label class="form-label">팀 수</label><input class="form-input" type="number" id="team-count" value="4" min="2" max="16" style="width:70px;"></div>
-            <div style="display:flex;flex-direction:column;gap:3px;"><label class="form-label">팀당 초기 당근 🥕</label><input class="form-input" type="number" id="init-pts" value="1000" min="100" step="100" style="width:118px;"></div>
+            <div style="display:flex;flex-direction:column;gap:3px;"><label class="form-label">기본 당근 🥕 <span style="color:var(--text-dim);font-size:10px;">(팀별 조정 가능)</span></label><input class="form-input" type="number" id="init-pts" value="1000" min="0" step="100" style="width:150px;"></div>
+            <div style="display:flex;flex-direction:column;gap:3px;"><label class="form-label">기본 최대 인원 <span style="color:var(--text-dim);font-size:10px;">(팀별 조정 가능)</span></label><input class="form-input" type="number" id="init-max" value="4" min="1" max="20" style="width:120px;"></div>
             <button class="btn btn-outline btn-sm" onclick="generateTeams()">팀 생성</button>
           </div>
           <div class="teams-grid" id="teams-grid"></div>
         </div>
 
-        <!-- Players - 1티어 / 2티어 분리 -->
+        <!-- Players - 1군 / 2군 분리 -->
         <div>
           <div class="sec-title">선수 등록</div>
-          <!-- 티어 탭 -->
+          <!-- 군 탭 -->
           <div style="display:flex;gap:0;margin-bottom:12px;border-bottom:1px solid var(--border);">
-            <button class="tier-tab active" id="tab-t1" onclick="switchTierTab(1)" style="padding:7px 20px;font-size:12px;font-weight:500;background:transparent;border:none;border-bottom:2px solid var(--gold);color:var(--gold);cursor:pointer;font-family:'Noto Sans KR',sans-serif;">⭐ 1티어</button>
-            <button class="tier-tab" id="tab-t2" onclick="switchTierTab(2)" style="padding:7px 20px;font-size:12px;font-weight:500;background:transparent;border:none;border-bottom:2px solid transparent;color:var(--text-dim);cursor:pointer;font-family:'Noto Sans KR',sans-serif;">🌙 2티어</button>
+            <button id="tab-t1" onclick="switchTierTab(1)" style="padding:7px 20px;font-size:12px;font-weight:500;background:transparent;border:none;border-bottom:2px solid var(--gold);color:var(--gold);cursor:pointer;font-family:'Noto Sans KR',sans-serif;">⭐ 1군</button>
+            <button id="tab-t2" onclick="switchTierTab(2)" style="padding:7px 20px;font-size:12px;font-weight:500;background:transparent;border:none;border-bottom:2px solid transparent;color:var(--text-dim);cursor:pointer;font-family:'Noto Sans KR',sans-serif;">🌙 2군</button>
           </div>
 
-          <!-- 1티어 -->
+          <!-- 1군 -->
           <div id="tier1-section">
             <div class="xlsx-drop" onclick="document.getElementById('xlsx-input-t1').click()"
               ondragover="event.preventDefault();this.style.background='rgba(201,168,76,0.06)'"
@@ -468,7 +469,7 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
               ondrop="handleDrop(event,'t1')">
               <input type="file" id="xlsx-input-t1" accept=".xlsx,.xls,.csv" style="display:none;" onchange="handleXlsxFile(this.files[0],'t1')">
               <div style="font-size:15px;margin-bottom:2px;opacity:0.5;">📊</div>
-              <div style="font-size:12px;color:var(--text-dim);">1티어 엑셀 업로드</div>
+              <div style="font-size:12px;color:var(--text-dim);">1군 엑셀 업로드</div>
               <div style="font-size:11px;color:var(--text-dim);margin-top:2px;">열 순서: <span style="color:var(--gold);">닉네임 | 포지션 | 점수 | 메모</span></div>
             </div>
             <div class="player-table-wrap">
@@ -487,7 +488,7 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
             </div>
           </div>
 
-          <!-- 2티어 -->
+          <!-- 2군 -->
           <div id="tier2-section" style="display:none;">
             <div class="xlsx-drop" onclick="document.getElementById('xlsx-input-t2').click()"
               ondragover="event.preventDefault();this.style.background='rgba(201,168,76,0.06)'"
@@ -495,7 +496,7 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
               ondrop="handleDrop(event,'t2')">
               <input type="file" id="xlsx-input-t2" accept=".xlsx,.xls,.csv" style="display:none;" onchange="handleXlsxFile(this.files[0],'t2')">
               <div style="font-size:15px;margin-bottom:2px;opacity:0.5;">📊</div>
-              <div style="font-size:12px;color:var(--text-dim);">2티어 엑셀 업로드</div>
+              <div style="font-size:12px;color:var(--text-dim);">2군 엑셀 업로드</div>
               <div style="font-size:11px;color:var(--text-dim);margin-top:2px;">열 순서: <span style="color:var(--gold);">닉네임 | 포지션 | 점수 | 메모</span></div>
             </div>
             <div class="player-table-wrap">
@@ -629,10 +630,14 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
     <!-- RIGHT: queue -->
     <div class="sidebar sidebar-right">
       <div class="sb-sec" style="flex:1;overflow-y:auto;padding-top:10px;">
-        <!-- 티어 탭 -->
-        <div style="display:flex;gap:0;margin-bottom:10px;border-bottom:1px solid var(--border);">
-          <button id="q-tab-t1" onclick="switchQueueTab(1)" style="flex:1;padding:5px;font-size:11px;font-weight:500;background:transparent;border:none;border-bottom:2px solid var(--gold);color:var(--gold);cursor:pointer;font-family:'Noto Sans KR',sans-serif;">⭐ 1티어</button>
-          <button id="q-tab-t2" onclick="switchQueueTab(2)" style="flex:1;padding:5px;font-size:11px;font-weight:500;background:transparent;border:none;border-bottom:2px solid transparent;color:var(--text-dim);cursor:pointer;font-family:'Noto Sans KR',sans-serif;">🌙 2티어</button>
+        <!-- 군 탭 -->
+        <div style="display:flex;gap:0;margin-bottom:6px;border-bottom:1px solid var(--border);">
+          <button id="q-tab-t1" onclick="switchQueueTab(1)" style="flex:1;padding:5px;font-size:11px;font-weight:500;background:transparent;border:none;border-bottom:2px solid var(--gold);color:var(--gold);cursor:pointer;font-family:'Noto Sans KR',sans-serif;">⭐ 1군</button>
+          <button id="q-tab-t2" onclick="switchQueueTab(2)" style="flex:1;padding:5px;font-size:11px;font-weight:500;background:transparent;border:none;border-bottom:2px solid transparent;color:var(--text-dim);cursor:pointer;font-family:'Noto Sans KR',sans-serif;">🌙 2군</button>
+        </div>
+        <!-- 2군 시작 버튼 (관리자만, 2군 탭일 때) -->
+        <div id="start-t2-area" style="display:none;padding:0 0 8px;">
+          <button class="btn btn-outline btn-sm" style="width:100%;font-size:11px;" onclick="startTier2()">🌙 2군 경매 시작 (당근 초기화)</button>
         </div>
         <div id="queue-list"></div>
       </div>
@@ -986,16 +991,28 @@ function applyRoleUI() {
 // ════════════════════════════
 function generateTeams() {
   const n = Math.min(parseInt(document.getElementById('team-count').value)||4, 16);
-  const pts = parseInt(document.getElementById('init-pts').value)||1000;
+  const defaultPts = parseInt(document.getElementById('init-pts').value)||1000;
+  const defaultMax = parseInt(document.getElementById('init-max').value)||4;
   S.teams = [];
   const g = document.getElementById('teams-grid'); g.innerHTML='';
   for (let i=0;i<n;i++) {
-    S.teams.push({name:CNAMES[i%COLORS.length]+' 팀',color:COLORS[i%COLORS.length],symbol:'🏆',pts,initPts:pts,members:[]});
+    S.teams.push({name:CNAMES[i%COLORS.length]+' 팀',color:COLORS[i%COLORS.length],symbol:'🏆',pts:defaultPts,initPts:defaultPts,maxMembers:defaultMax,members:[]});
     g.innerHTML+=`<div class="team-card-input">
       <input class="form-input" value="${CNAMES[i%COLORS.length]} 팀" oninput="S.teams[${i}].name=this.value" style="font-size:12px;">
-      <div style="display:flex;gap:6px;align-items:center;margin-top:2px;">
-        <input class="form-input" value="🏆" oninput="S.teams[${i}].symbol=this.value" style="font-size:18px;width:52px;text-align:center;padding:4px;" maxlength="2" placeholder="심볼">
-        <span style="font-size:10px;color:var(--text-dim);">팀 심볼</span>
+      <div style="display:flex;gap:6px;align-items:center;margin-top:4px;">
+        <input class="form-input" value="🏆" oninput="S.teams[${i}].symbol=this.value" style="font-size:18px;width:44px;text-align:center;padding:4px;" maxlength="2" placeholder="심볼">
+        <div style="flex:1;display:flex;flex-direction:column;gap:2px;">
+          <label style="font-size:10px;color:var(--text-dim);">당근 🥕</label>
+          <input class="form-input" type="number" value="${defaultPts}" min="0" step="100"
+            oninput="S.teams[${i}].pts=+this.value;S.teams[${i}].initPts=+this.value"
+            style="font-size:12px;width:100%;">
+        </div>
+        <div style="display:flex;flex-direction:column;gap:2px;">
+          <label style="font-size:10px;color:var(--text-dim);">최대 인원</label>
+          <input class="form-input" type="number" value="${defaultMax}" min="1" max="20"
+            oninput="S.teams[${i}].maxMembers=+this.value"
+            style="font-size:12px;width:58px;">
+        </div>
       </div>
       <div class="color-row">${COLORS.map((c,ci)=>`<div class="cdot ${ci===i%COLORS.length?'on':''}" style="background:${c};" onclick="setColor(${i},${ci},this)"></div>`).join('')}</div>
     </div>`;
@@ -1017,7 +1034,33 @@ function switchQueueTab(tier){
   document.getElementById('q-tab-t1').style.color = tier===1?'var(--gold)':'var(--text-dim)';
   document.getElementById('q-tab-t2').style.borderBottomColor = tier===2?'var(--gold)':'transparent';
   document.getElementById('q-tab-t2').style.color = tier===2?'var(--gold)':'var(--text-dim)';
+  // 2군 탭이고 관리자면 시작 버튼 표시
+  const t2area = document.getElementById('start-t2-area');
+  if(t2area) t2area.style.display = (tier===2 && me.role==='admin') ? 'block' : 'none';
   renderQueue();
+}
+
+// 2군 경매 시작 — 당근 초기화
+function startTier2(){
+  if(!confirm('2군 경매를 시작합니다.\n각 팀의 당근이 초기값으로 초기화됩니다. 계속할까요?')) return;
+  // 팀 당근 초기화 (낙찰 멤버는 유지, 포인트만 리셋)
+  S.teams.forEach(t => {
+    t.pts = t.initPts;
+    // 2군 멤버 리스트 분리 (1군 멤버는 유지)
+  });
+  S.currentPlayer = null; S.curIdx = null; S.bids = [];
+  document.getElementById('spotlight').classList.add('hidden');
+  document.getElementById('no-auction').classList.remove('hidden');
+  clearBidDisplay(); renderBidHist(); renderTeamsPanel(); renderQueue();
+  if(fbDB){
+    fbDB.ref('auction').update({
+      teams: S.teams.map(t=>({pts:t.pts, members:t.members, maxMembers:t.maxMembers||4})),
+      teamInfo: S.teams,
+      bids: [], curIdx: null
+    });
+  }
+  showToast('🌙 2군 경매 시작! 당근이 초기화됐습니다');
+  SFX.login();
 }
 
 function renderPlayerTable(tier){
@@ -1252,7 +1295,7 @@ function renderTeamsPanel(){
         <span class="tc-name" style="color:${t.color};">${t.symbol||''} ${t.name}</span>
         <div style="text-align:right;">
           <div class="tc-pts" style="color:${t.pts<=0?'var(--red)':''}">${t.pts}🥕</div>
-          <div style="font-size:10px;color:${t.members.length>=MAX_MEMBERS?'var(--green)':'var(--text-dim)'};">${t.members.length}/${MAX_MEMBERS}명</div>
+          <div style="font-size:10px;color:${t.members.length>=(t.maxMembers||4)?'var(--green)':'var(--text-dim)'};">${t.members.length}/${MAX_MEMBERS}명</div>
         </div>
       </div>
       <div class="pts-track"><div class="pts-fill" style="width:${Math.max(0,(t.pts/mx*100)).toFixed(1)}%;background:${t.color};opacity:0.7;"></div></div>
@@ -1369,8 +1412,8 @@ function placeBid(){
   if(!pts||pts<=0){showToast('당근을 입력하세요');return;}
   const t=S.teams[ti];
   // 4명 제한 체크
-  if(t.members.length >= MAX_MEMBERS){
-    showToast(`❌ ${t.name}은 이미 ${MAX_MEMBERS}명을 낙찰받았습니다`);return;
+  if(t.members.length >= (t.maxMembers||4)){
+    showToast(`❌ ${t.name}은 이미 ${t.maxMembers||4}명을 낙찰받았습니다`);return;
   }
   if(pts>t.pts){showToast(`${t.name} 당근 부족 (보유: ${t.pts}🥕)`);return;}
   if(pts<=0){showToast('0보다 큰 당근을 입력하세요');return;}
@@ -1383,7 +1426,7 @@ function placeBid(){
   showToast(`${t.name} — ${pts}🥕 입찰`);
 }
 
-const MAX_MEMBERS = 4; // 팀당 최대 낙찰 인원
+// 팀별 최대 인원은 S.teams[i].maxMembers 로 관리
 
 // Captain bid
 function captainBid(){
@@ -1394,8 +1437,8 @@ function captainBid(){
   const ti=S.teams.findIndex(t=>t.name===me.teamName);
   if(ti===-1){showToast(`"${me.teamName}" 팀을 찾을 수 없습니다`);return;}
   const t=S.teams[ti];
-  if(t.members.length >= MAX_MEMBERS){
-    showToast(`❌ ${t.name}은 이미 ${MAX_MEMBERS}명을 낙찰받았습니다`);return;
+  if(t.members.length >= (t.maxMembers||4)){
+    showToast(`❌ ${t.name}은 이미 ${t.maxMembers||4}명을 낙찰받았습니다`);return;
   }
 
   const input = document.getElementById('cap-pts');
@@ -1422,8 +1465,8 @@ function confirmSold(){
   const top=S.bids[0],t=S.teams[top.team],p=S.currentPlayer;
   if(top.pts > t.pts){showToast(`${t.name} 당근이 부족합니다 (보유: ${t.pts}🥕)`);return;}
   // 4명 제한 체크
-  if(t.members.length >= MAX_MEMBERS){
-    showToast(`❌ ${t.name}은 이미 ${MAX_MEMBERS}명을 낙찰받았습니다`);return;
+  if(t.members.length >= (t.maxMembers||4)){
+    showToast(`❌ ${t.name}은 이미 ${t.maxMembers||4}명을 낙찰받았습니다`);return;
   }
 
   t.pts = Math.max(0, t.pts - top.pts);
@@ -1556,7 +1599,7 @@ function importRows(rows,tier='t1'){
     n++;
   });
   renderPlayerTable(tier);
-  showToast(`✓ ${tier==='t1'?'1티어':'2티어'} 선수 ${n}명 완료`);
+  showToast(`✓ ${tier==='t1'?'1군':'2군'} 선수 ${n}명 완료`);
   const inputEl=document.getElementById(`xlsx-input-${tier}`);
   if(inputEl) inputEl.value='';
 }
