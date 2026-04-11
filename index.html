@@ -1162,7 +1162,7 @@ function showScreen(id){
 
 function updateTopbar(){
   document.getElementById('tb-round').textContent='라운드 '+S.round;
-  document.getElementById('tb-remain').textContent='남은 선수 '+S.players.filter(p=>!p.sold).length+'명';
+  document.getElementById('tb-remain').textContent='남은 선수 '+S.players.filter(p=>!p.sold&&!p.passed).length+'명';
 }
 
 function renderTeamsPanel(){
@@ -1173,7 +1173,10 @@ function renderTeamsPanel(){
       <div class="tc-stripe" style="background:${t.color};"></div>
       <div class="tc-hdr">
         <span class="tc-name" style="color:${t.color};">${t.symbol||''} ${t.name}</span>
-        <span class="tc-pts" style="color:${t.pts<=0?'var(--red)':''}">${t.pts}🥕</span>
+        <div style="text-align:right;">
+          <div class="tc-pts" style="color:${t.pts<=0?'var(--red)':''}">${t.pts}🥕</div>
+          <div style="font-size:10px;color:${t.members.length>=MAX_MEMBERS?'var(--green)':'var(--text-dim)'};">${t.members.length}/${MAX_MEMBERS}명</div>
+        </div>
       </div>
       <div class="pts-track"><div class="pts-fill" style="width:${Math.max(0,(t.pts/mx*100)).toFixed(1)}%;background:${t.color};opacity:0.7;"></div></div>
       ${t.members.length?`<div class="tc-members">${t.members.map(m=>`<span class="tc-chip">${m.nick}</span>`).join('')}</div>`:''}
@@ -1181,8 +1184,9 @@ function renderTeamsPanel(){
 }
 
 function renderQueue(){
-  const unsold = S.players.map((p,i)=>({p,i})).filter(({p})=>!p.sold);
-  const sold   = S.players.map((p,i)=>({p,i})).filter(({p})=>p.sold);
+  const unsold  = S.players.map((p,i)=>({p,i})).filter(({p})=>!p.sold && !p.passed);
+  const passed  = S.players.map((p,i)=>({p,i})).filter(({p})=>p.passed);
+  const sold    = S.players.map((p,i)=>({p,i})).filter(({p})=>p.sold);
 
   let idxCounter=0;
   const unsoldHTML = unsold.map(({p,i})=>{
@@ -1196,8 +1200,19 @@ function renderQueue(){
     </div>`;
   }).join('');
 
+  // 유찰 목록 (낙찰 위에, 주황/노란색)
+  const passedHTML = passed.length ? `
+    <div style="font-size:9px;letter-spacing:2px;color:rgba(201,168,76,0.5);text-transform:uppercase;font-family:'Rajdhani',sans-serif;padding:8px 2px 4px;margin-top:6px;border-top:1px solid rgba(255,255,255,0.07);">유찰</div>
+    ${passed.map(({p,i})=>`
+    <div class="qi ${me.role==='admin'?'clickable':''}" ${me.role==='admin'?`onclick="reAuction(${i})"`:''} style="opacity:0.45;background:rgba(201,168,76,0.04);border-color:rgba(201,168,76,0.2);">
+      <div class="qi-num" style="color:var(--gold-dim);">↩</div>
+      <div class="qi-name" style="color:var(--text-dim);">${p.nick}</div>
+      <span style="font-size:10px;padding:1px 5px;border-radius:2px;background:rgba(201,168,76,0.1);color:var(--gold-dim);">유찰</span>
+    </div>`).join('')}` : '';
+
+  // 낙찰 목록 (맨 하단, 회색)
   const soldHTML = sold.length ? `
-    <div style="font-size:9px;letter-spacing:2px;color:rgba(255,255,255,0.2);text-transform:uppercase;font-family:'Rajdhani',sans-serif;padding:8px 2px 4px;margin-top:6px;border-top:1px solid rgba(255,255,255,0.07);">낙찰 완료</div>
+    <div style="font-size:9px;letter-spacing:2px;color:rgba(255,255,255,0.2);text-transform:uppercase;font-family:'Rajdhani',sans-serif;padding:8px 2px 4px;margin-top:4px;border-top:1px solid rgba(255,255,255,0.05);">낙찰 완료</div>
     ${sold.map(({p})=>`
     <div class="qi" style="opacity:0.35;background:rgba(255,255,255,0.02);border-color:rgba(255,255,255,0.07);">
       <div class="qi-num" style="color:#444;">✓</div>
@@ -1205,7 +1220,20 @@ function renderQueue(){
       <span style="font-size:10px;padding:1px 5px;border-radius:2px;background:rgba(255,255,255,0.05);color:#555;">${p.soldPts||''}🥕</span>
     </div>`).join('')}` : '';
 
-  document.getElementById('queue-list').innerHTML = unsoldHTML + soldHTML;
+  document.getElementById('queue-list').innerHTML = unsoldHTML + passedHTML + soldHTML;
+}
+
+// 유찰된 선수 재경매 (관리자가 유찰 목록에서 클릭)
+function reAuction(i){
+  if(me.role!=='admin') return;
+  const p = S.players[i];
+  p.passed = false;
+  SFX.playerReveal();
+  S.currentPlayer=p; S.curIdx=i; S.bids=[]; S.round++;
+  renderSpotlight(p); renderQueue(); updateTopbar(); renderBidHist(); clearBidDisplay();
+  closeRemain(); closeAF();
+  fbSet('curIdx',i); fbSet('bids',[]); fbSet('round',S.round);
+  fbSet('players', S.players);
 }
 
 function renderBidTeamSel(){
@@ -1216,10 +1244,12 @@ function selectPlayer(i){
   if(me.role!=='admin')return;
   const p=S.players[i]; if(p.sold)return;
   SFX.playerReveal();
-  S.currentPlayer=p;S.curIdx=i;S.bids=[];S.round++;
-  renderSpotlight(p);renderQueue();updateTopbar();renderBidHist();clearBidDisplay();
-  closeRemain();closeAF();
-  fbSet('curIdx',i);fbSet('bids',[]);fbSet('round',S.round);
+  S.currentPlayer=p; S.curIdx=i; S.bids=[]; S.round++;
+  renderSpotlight(p); renderQueue(); updateTopbar();
+  renderBidHist(); // 2번: 새 선수 선택 시 입찰기록 초기화
+  clearBidDisplay();
+  closeRemain(); closeAF();
+  fbSet('curIdx',i); fbSet('bids',[]); fbSet('round',S.round);
 }
 
 function renderSpotlight(p){
@@ -1261,6 +1291,10 @@ function placeBid(){
   const ti=parseInt(document.getElementById('bid-team-sel').value);
   if(!pts||pts<=0){showToast('당근을 입력하세요');return;}
   const t=S.teams[ti];
+  // 4명 제한 체크
+  if(t.members.length >= MAX_MEMBERS){
+    showToast(`❌ ${t.name}은 이미 ${MAX_MEMBERS}명을 낙찰받았습니다`);return;
+  }
   if(pts>t.pts){showToast(`${t.name} 당근 부족 (보유: ${t.pts}🥕)`);return;}
   if(pts<=0){showToast('0보다 큰 당근을 입력하세요');return;}
   if(S.bids.length&&pts<=S.bids[0].pts){showToast('현재 최고 입찰보다 높아야 합니다');return;}
@@ -1272,25 +1306,31 @@ function placeBid(){
   showToast(`${t.name} — ${pts}🥕 입찰`);
 }
 
+const MAX_MEMBERS = 4; // 팀당 최대 낙찰 인원
+
 // Captain bid
 function captainBid(){
   if(!fbDB){showToast('Firebase 연결이 필요합니다');return;}
   if(!S.currentPlayer){showToast('경매 중인 선수가 없습니다');return;}
+
+  // 4명 제한 체크
+  const ti=S.teams.findIndex(t=>t.name===me.teamName);
+  if(ti===-1){showToast(`"${me.teamName}" 팀을 찾을 수 없습니다`);return;}
+  const t=S.teams[ti];
+  if(t.members.length >= MAX_MEMBERS){
+    showToast(`❌ ${t.name}은 이미 ${MAX_MEMBERS}명을 낙찰받았습니다`);return;
+  }
+
   const input = document.getElementById('cap-pts');
   const currentTop = S.bids.length ? S.bids[0].pts : 0;
   let pts = parseInt(input.value);
   if(!pts || pts <= 0){
-    // 빈칸이면 현재 최고 입찰 + 10
     pts = currentTop + 10;
   } else {
-    // 직접 입력 시 현재 최고 입찰 + 10 이상이어야 함
     if(pts < currentTop + 10){
       showToast(`최소 ${currentTop + 10}pt 이상 입력해야 합니다`);return;
     }
   }
-  const ti=S.teams.findIndex(t=>t.name===me.teamName);
-  if(ti===-1){showToast(`"${me.teamName}" 팀을 찾을 수 없습니다`);return;}
-  const t=S.teams[ti];
   if(pts>t.pts){showToast(`당근 부족 (보유: ${t.pts}🥕)`);return;}
   fbSet('bids',[{team:ti,teamName:t.name,teamColor:t.color,pts},...S.bids]);
   SFX.bid();
@@ -1304,44 +1344,49 @@ function confirmSold(){
   if(!S.bids.length){showToast('입찰 내역이 없습니다');return;}
   const top=S.bids[0],t=S.teams[top.team],p=S.currentPlayer;
   if(top.pts > t.pts){showToast(`${t.name} 당근이 부족합니다 (보유: ${t.pts}🥕)`);return;}
+  // 4명 제한 체크
+  if(t.members.length >= MAX_MEMBERS){
+    showToast(`❌ ${t.name}은 이미 ${MAX_MEMBERS}명을 낙찰받았습니다`);return;
+  }
 
-  // 상태 업데이트
   t.pts = Math.max(0, t.pts - top.pts);
   t.members.push({nick:p.nick,pos:p.pos,soldPts:top.pts});
   p.sold=true; p.soldTo=top.team; p.soldPts=top.pts;
 
   const overlayData = {type:'sold', text:`${p.nick} → ${t.name} (${top.pts}🥕)`, ts:Date.now()};
 
-  // Firebase 원자적 업데이트 (한번에)
   if(fbDB){
     fbDB.ref('auction').update({
       teams: S.teams.map(tm=>({pts:tm.pts, members:tm.members})),
       teamInfo: S.teams,
       players: S.players,
-      bids: [],
+      bids: [],        // 2번: 입찰기록 초기화
       curIdx: null,
       overlay: overlayData
     });
   }
 
-  // 관리자 본인 화면 처리
   SFX.sold();
   showOverlay('sold', overlayData.text);
   S.currentPlayer=null; S.curIdx=null; S.bids=[];
   document.getElementById('spotlight').classList.add('hidden');
   document.getElementById('no-auction').classList.remove('hidden');
-  clearBidDisplay(); renderTeamsPanel(); renderQueue(); updateTopbar(); closeAF();
+  clearBidDisplay(); renderBidHist(); renderTeamsPanel(); renderQueue(); updateTopbar(); closeAF();
 }
 
 // Admin: pass
 function confirmPass(){
   if(!S.currentPlayer){showToast('선수를 먼저 선택하세요');return;}
-  const nick = S.currentPlayer.nick;
-  const overlayData = {type:'pass', text:`${nick} — 유찰`, ts:Date.now()};
+  const p = S.currentPlayer;
+  // 3번: 유찰 표시
+  p.passed = true;
+
+  const overlayData = {type:'pass', text:`${p.nick} — 유찰`, ts:Date.now()};
 
   if(fbDB){
     fbDB.ref('auction').update({
-      bids: [],
+      players: S.players,  // passed 상태 저장
+      bids: [],             // 2번: 입찰기록 초기화
       curIdx: null,
       overlay: overlayData
     });
@@ -1352,7 +1397,7 @@ function confirmPass(){
   S.currentPlayer=null; S.curIdx=null; S.bids=[];
   document.getElementById('spotlight').classList.add('hidden');
   document.getElementById('no-auction').classList.remove('hidden');
-  clearBidDisplay(); renderQueue(); closeAF();
+  clearBidDisplay(); renderBidHist(); renderQueue(); closeAF();
 }
 
 function showOverlay(type, text){
