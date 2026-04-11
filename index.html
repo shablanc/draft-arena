@@ -148,7 +148,7 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
 .setup-sub{font-size:12px;color:var(--text-dim);}
 .setup-body{padding:22px 30px;display:flex;flex-direction:column;gap:22px;}
 .sec-title{font-size:10px;letter-spacing:3px;color:var(--gold-dim);text-transform:uppercase;margin-bottom:10px;font-family:'Rajdhani',sans-serif;}
-.teams-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(168px,1fr));gap:7px;}
+.teams-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:7px;}
 .team-card-input{background:var(--bg3);border:1px solid var(--border);border-radius:3px;padding:9px 11px;display:flex;flex-direction:column;gap:6px;}
 .color-row{display:flex;gap:5px;flex-wrap:wrap;}
 .cdot{width:12px;height:12px;border-radius:50%;border:2px solid rgba(255,255,255,0.15);cursor:pointer;transition:transform 0.1s;flex-shrink:0;}
@@ -192,7 +192,7 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
 .setup-sub{font-size:12px;color:var(--text-dim);}
 .setup-body{padding:22px 30px;display:flex;flex-direction:column;gap:22px;}
 .sec-title{font-size:10px;letter-spacing:3px;color:var(--gold-dim);text-transform:uppercase;margin-bottom:10px;font-family:'Rajdhani',sans-serif;}
-.teams-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(168px,1fr));gap:7px;}
+.teams-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:7px;}
 .team-card-input{background:var(--bg3);border:1px solid var(--border);border-radius:3px;padding:9px 11px;display:flex;flex-direction:column;gap:6px;}
 .color-row{display:flex;gap:5px;flex-wrap:wrap;}
 .cdot{width:12px;height:12px;border-radius:50%;border:2px solid rgba(255,255,255,0.15);cursor:pointer;transition:transform 0.1s;flex-shrink:0;}
@@ -445,8 +445,15 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
           <div class="sec-title">팀 설정</div>
           <div style="display:flex;gap:9px;align-items:flex-end;flex-wrap:wrap;margin-bottom:11px;">
             <div style="display:flex;flex-direction:column;gap:3px;"><label class="form-label">팀 수</label><input class="form-input" type="number" id="team-count" value="4" min="2" max="16" style="width:70px;"></div>
-            <div style="display:flex;flex-direction:column;gap:3px;"><label class="form-label">기본 당근 🥕 <span style="color:var(--text-dim);font-size:10px;">(팀별 조정 가능)</span></label><input class="form-input" type="number" id="init-pts" value="1000" min="0" step="100" style="width:150px;"></div>
-            <div style="display:flex;flex-direction:column;gap:3px;"><label class="form-label">기본 최대 인원 <span style="color:var(--text-dim);font-size:10px;">(팀별 조정 가능)</span></label><input class="form-input" type="number" id="init-max" value="4" min="1" max="20" style="width:120px;"></div>
+            <div style="display:flex;flex-direction:column;gap:3px;">
+              <label class="form-label">1군 기본 당근 🥕</label>
+              <input class="form-input" type="number" id="init-pts-t1" value="1000" min="0" step="100" style="width:130px;">
+            </div>
+            <div style="display:flex;flex-direction:column;gap:3px;">
+              <label class="form-label">2군 기본 당근 🥕</label>
+              <input class="form-input" type="number" id="init-pts-t2" value="500" min="0" step="100" style="width:130px;">
+            </div>
+            <div style="display:flex;flex-direction:column;gap:3px;"><label class="form-label">기본 최대 인원</label><input class="form-input" type="number" id="init-max" value="4" min="1" max="20" style="width:100px;"></div>
             <button class="btn btn-outline btn-sm" onclick="generateTeams()">팀 생성</button>
           </div>
           <div class="teams-grid" id="teams-grid"></div>
@@ -991,30 +998,46 @@ function applyRoleUI() {
 // ════════════════════════════
 function generateTeams() {
   const n = Math.min(parseInt(document.getElementById('team-count').value)||4, 16);
-  const defaultPts = parseInt(document.getElementById('init-pts').value)||1000;
+  const ptsT1 = parseInt(document.getElementById('init-pts-t1').value)||1000;
+  const ptsT2 = parseInt(document.getElementById('init-pts-t2').value)||500;
   const defaultMax = parseInt(document.getElementById('init-max').value)||4;
   S.teams = [];
   const g = document.getElementById('teams-grid'); g.innerHTML='';
   for (let i=0;i<n;i++) {
-    S.teams.push({name:CNAMES[i%COLORS.length]+' 팀',color:COLORS[i%COLORS.length],symbol:'🏆',pts:defaultPts,initPts:defaultPts,maxMembers:defaultMax,members:[]});
-    g.innerHTML+=`<div class="team-card-input">
+    S.teams.push({
+      name:CNAMES[i%COLORS.length]+' 팀', color:COLORS[i%COLORS.length],
+      symbol:'🏆',
+      pts:ptsT1, initPts:ptsT1,     // 현재 당근 (1군 시작값)
+      initPtsT1:ptsT1, initPtsT2:ptsT2, // 1군/2군 기본값 저장
+      maxMembers:defaultMax, members:[]
+    });
+    g.innerHTML+=`<div class="team-card-input" style="min-width:200px;">
       <input class="form-input" value="${CNAMES[i%COLORS.length]} 팀" oninput="S.teams[${i}].name=this.value" style="font-size:12px;">
-      <div style="display:flex;gap:6px;align-items:center;margin-top:4px;">
-        <input class="form-input" value="🏆" oninput="S.teams[${i}].symbol=this.value" style="font-size:18px;width:44px;text-align:center;padding:4px;" maxlength="2" placeholder="심볼">
-        <div style="flex:1;display:flex;flex-direction:column;gap:2px;">
-          <label style="font-size:10px;color:var(--text-dim);">당근 🥕</label>
-          <input class="form-input" type="number" value="${defaultPts}" min="0" step="100"
-            oninput="S.teams[${i}].pts=+this.value;S.teams[${i}].initPts=+this.value"
+      <div style="display:flex;gap:6px;align-items:flex-end;margin-top:6px;flex-wrap:wrap;">
+        <div style="display:flex;flex-direction:column;gap:2px;">
+          <label style="font-size:10px;color:var(--text-dim);">심볼</label>
+          <input class="form-input" value="🏆" oninput="S.teams[${i}].symbol=this.value" style="font-size:18px;width:48px;text-align:center;padding:4px;" maxlength="2" placeholder="심볼">
+        </div>
+        <div style="flex:1;display:flex;flex-direction:column;gap:2px;min-width:70px;">
+          <label style="font-size:10px;color:var(--text-dim);">1군 당근 🥕</label>
+          <input class="form-input" type="number" value="${ptsT1}" min="0" step="100"
+            oninput="S.teams[${i}].initPtsT1=+this.value;S.teams[${i}].initPts=+this.value;S.teams[${i}].pts=+this.value"
+            style="font-size:12px;width:100%;">
+        </div>
+        <div style="flex:1;display:flex;flex-direction:column;gap:2px;min-width:70px;">
+          <label style="font-size:10px;color:var(--text-dim);">2군 당근 🥕</label>
+          <input class="form-input" type="number" value="${ptsT2}" min="0" step="100"
+            oninput="S.teams[${i}].initPtsT2=+this.value"
             style="font-size:12px;width:100%;">
         </div>
         <div style="display:flex;flex-direction:column;gap:2px;">
           <label style="font-size:10px;color:var(--text-dim);">최대 인원</label>
           <input class="form-input" type="number" value="${defaultMax}" min="1" max="20"
             oninput="S.teams[${i}].maxMembers=+this.value"
-            style="font-size:12px;width:58px;">
+            style="font-size:12px;width:60px;">
         </div>
       </div>
-      <div class="color-row">${COLORS.map((c,ci)=>`<div class="cdot ${ci===i%COLORS.length?'on':''}" style="background:${c};" onclick="setColor(${i},${ci},this)"></div>`).join('')}</div>
+      <div class="color-row" style="margin-top:4px;">${COLORS.map((c,ci)=>`<div class="cdot ${ci===i%COLORS.length?'on':''}" style="background:${c};" onclick="setColor(${i},${ci},this)"></div>`).join('')}</div>
     </div>`;
   }
 }
@@ -1042,11 +1065,10 @@ function switchQueueTab(tier){
 
 // 2군 경매 시작 — 당근 초기화
 function startTier2(){
-  if(!confirm('2군 경매를 시작합니다.\n각 팀의 당근이 초기값으로 초기화됩니다. 계속할까요?')) return;
-  // 팀 당근 초기화 (낙찰 멤버는 유지, 포인트만 리셋)
+  if(!confirm('2군 경매를 시작합니다.\n각 팀의 당근이 2군 기본값으로 초기화됩니다. 계속할까요?')) return;
   S.teams.forEach(t => {
-    t.pts = t.initPts;
-    // 2군 멤버 리스트 분리 (1군 멤버는 유지)
+    t.pts = t.initPtsT2 || t.initPts; // 2군 당근으로 초기화
+    t.initPts = t.pts; // 현재 initPts 업데이트
   });
   S.currentPlayer = null; S.curIdx = null; S.bids = [];
   document.getElementById('spotlight').classList.add('hidden');
@@ -1054,7 +1076,12 @@ function startTier2(){
   clearBidDisplay(); renderBidHist(); renderTeamsPanel(); renderQueue();
   if(fbDB){
     fbDB.ref('auction').update({
-      teams: S.teams.map(t=>({pts:t.pts, members:t.members, maxMembers:t.maxMembers||4})),
+      teams: S.teams.map(t=>({
+        name:t.name, color:t.color, symbol:t.symbol||'🏆',
+        pts:t.pts, initPts:t.pts,
+        initPtsT1:t.initPtsT1, initPtsT2:t.initPtsT2,
+        maxMembers:t.maxMembers||4, members:t.members
+      })),
       teamInfo: S.teams,
       bids: [], curIdx: null
     });
@@ -1154,15 +1181,22 @@ function listenFirebase(){
       S.teams = d.teamInfo;
     }
 
-    // teams (pts/members 업데이트)
+    // teams (pts/members 업데이트) - 이름/색상/심볼도 포함
     if(d.teams && Array.isArray(d.teams)){
       if(me.role !== 'admin' && S.teams.length === 0){
-        // teamInfo가 없을 경우 대비
         S.teams = d.teams;
       } else {
         d.teams.forEach((t,i)=>{
           if(S.teams[i]){
+            // 전체 팀 정보 동기화 (이름, 색상, 심볼 포함)
+            if(t.name) S.teams[i].name = t.name;
+            if(t.color) S.teams[i].color = t.color;
+            if(t.symbol) S.teams[i].symbol = t.symbol;
             S.teams[i].pts = t.pts;
+            S.teams[i].initPts = t.initPts||S.teams[i].initPts;
+            S.teams[i].initPtsT1 = t.initPtsT1||S.teams[i].initPtsT1;
+            S.teams[i].initPtsT2 = t.initPtsT2||S.teams[i].initPtsT2;
+            S.teams[i].maxMembers = t.maxMembers||S.teams[i].maxMembers||4;
             S.teams[i].members = t.members||[];
           }
         });
@@ -1252,11 +1286,19 @@ function startAuction(){
 
   const fbOk = connectFb(FB_CONFIG);
   if(fbOk){
-    fbSet('teams', S.teams.map(t=>({pts:t.pts,members:t.members})));
+    // teams에 전체 정보 저장 (이름, 색상, 심볼, 당근 모두 포함)
+    fbSet('teams', S.teams.map(t=>({
+      name:t.name, color:t.color, symbol:t.symbol||'🏆',
+      pts:t.pts, initPts:t.initPts,
+      initPtsT1:t.initPtsT1||t.initPts,
+      initPtsT2:t.initPtsT2||t.initPts,
+      maxMembers:t.maxMembers||4,
+      members:t.members
+    })));
     fbSet('teamInfo', S.teams);
     fbSet('players', S.players);
     fbSet('bids',[]);fbSet('curIdx',null);fbSet('round',0);
-    fbSet('reset', null); // 이전 reset 필드 제거
+    fbSet('reset', null);
     showToast('🔥 Firebase 실시간 연결됨!');
   } else {
     document.getElementById('fb-txt').textContent='싱글 모드';showToast('싱글 모드로 시작');
