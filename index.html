@@ -267,8 +267,13 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
 .ba-by span{font-weight:500;}
 .admin-ctrl{display:flex;flex-direction:column;gap:5px;align-items:flex-end;}
 .act-row{display:flex;gap:5px;}
-.bid-field{width:100px;padding:6px 8px;font-size:13px;text-align:right;background:var(--bg2);border:1px solid var(--border);color:var(--text);border-radius:2px;font-family:'Noto Sans KR',sans-serif;outline:none;}
+.bid-field{width:100px;padding:6px 8px;font-size:13px;text-align:center;background:var(--bg2);border:1px solid var(--border);color:var(--text);border-radius:2px;font-family:'Noto Sans KR',sans-serif;outline:none;}
 .bid-field:focus{border-color:var(--gold-dim);}
+/* 화살표 버튼 스타일 */
+.bid-field::-webkit-inner-spin-button,
+.bid-field::-webkit-outer-spin-button{
+  opacity:1;cursor:pointer;height:28px;
+}
 
 /* captain bar */
 .captain-bar{background:var(--bg2);border-top:1px solid var(--border);padding:10px 18px;display:flex;gap:9px;align-items:center;flex-shrink:0;}
@@ -602,7 +607,7 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
                 <!-- admin controls -->
                 <div class="admin-ctrl hidden" id="admin-ctrl">
                   <div class="act-row">
-                    <input class="bid-field" type="number" id="bid-pts" placeholder="🥕 당근">
+                    <input class="bid-field" type="number" id="bid-pts" placeholder="🥕 당근" step="10">
                     <select class="form-input" id="bid-team-sel" style="height:33px;font-size:11px;width:105px;"></select>
                   </div>
                   <div class="act-row">
@@ -619,7 +624,7 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
               <div class="captain-card-bid hidden" id="captain-card-bid" style="margin-top:12px;display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
                 <span style="font-size:12px;color:var(--text-dim);">내 입찰:</span>
                 <div id="cap-team-disp-card" style="font-size:13px;font-weight:700;padding:5px 12px;border-radius:2px;border:1px solid var(--border-bright);background:rgba(201,168,76,0.08);color:var(--gold);">—</div>
-                <input class="bid-field" type="number" id="cap-pts" placeholder="🥕 당근" style="width:110px;">
+                <input class="bid-field" type="number" id="cap-pts" placeholder="🥕 당근" step="10" style="width:110px;">
                 <button class="btn btn-gold btn-sm" onclick="captainBid()">입찰하기</button>
                 <span style="font-size:11px;color:var(--text-dim);">현재: <span id="cap-cur-pts" style="color:var(--gold);font-family:'Rajdhani',sans-serif;font-weight:700;">—</span></span>
               </div>
@@ -632,7 +637,7 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
       <div class="captain-bar hidden" id="captain-bar">
         <span class="cap-label">입찰:</span>
         <div class="cap-team" id="cap-team-disp" style="color:var(--gold);">—</div>
-        <input class="bid-field" type="number" id="cap-pts" placeholder="🥕 당근" style="width:108px;">
+        <input class="bid-field" type="number" id="cap-pts" placeholder="🥕 당근" step="10" style="width:108px;">
         <button class="btn btn-gold btn-sm" onclick="captainBid()">입찰하기</button>
         <span class="cap-cur">🥕 현재: <span id="cap-cur-pts">—</span>🥕</span>
       </div>
