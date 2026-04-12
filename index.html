@@ -933,7 +933,8 @@ function goAdmin() {
   if (!nick) { showToast('닉네임을 입력하세요'); return; }
   if (pw !== ADMIN_PW) { SFX.pass(); showToast('비밀번호가 틀렸습니다'); return; }
   SFX.login();
-  me.nick = nick;
+  me.nick = nick; me.role = 'admin';
+  saveSession();
   showScreen('setup-screen');
 }
 
@@ -947,6 +948,7 @@ function goCaptain() {
   if (!connectFbFromSession()) { SFX.pass(); showToast('연결 실패. 잠시 후 다시 시도하세요'); return; }
   SFX.login();
   applyRoleUI();
+  saveSession();
   showScreen('auction-screen');
   showToast(`${team} 팀장으로 입장했습니다`);
   
@@ -957,6 +959,7 @@ function goSpectator() {
   if (!connectFbFromSession()) { SFX.pass(); showToast('연결 실패. 잠시 후 다시 시도하세요'); return; }
   SFX.login();
   applyRoleUI();
+  saveSession();
   showScreen('auction-screen');
   showToast('관전자로 입장했습니다');
   
@@ -1124,6 +1127,7 @@ function fullReset(){
   if(!confirm('모든 데이터를 초기화할까요?'))return;
   playerList={t1:[],t2:[]};
   S={teams:[],players:[],curIdx:null,bids:[],round:0};
+  sessionStorage.removeItem('da_session'); // 세션 삭제
   renderPlayerTable();generateTeams();
   if(fbDB){
     fbDB.ref('auction').set({reset:Date.now(),teams:[],players:[],bids:[],curIdx:null,round:0});
@@ -1305,6 +1309,7 @@ function startAuction(){
   }
 
   applyRoleUI();
+  saveSession();
   showScreen('auction-screen');
   renderTeamsPanel();renderQueue();updateTopbar();renderBidTeamSel();
   setTimeout(()=>{ window.scrollTo(0,0); document.getElementById('stage-inner').scrollTop=0; }, 50);
@@ -1681,8 +1686,63 @@ function showToast(msg){
   setTimeout(()=>t.classList.remove('show'),2400);
 }
 
+// ════════════════════════════
+//  SESSION 저장/복원
+// ════════════════════════════
+function saveSession(){
+  sessionStorage.setItem('da_session', JSON.stringify({
+    role: me.role, nick: me.nick, teamName: me.teamName
+  }));
+}
+
+function restoreSession(){
+  const raw = sessionStorage.getItem('da_session');
+  if(!raw) return false;
+  try {
+    const sess = JSON.parse(raw);
+    if(!sess.role) return false;
+    me.role = sess.role; me.nick = sess.nick; me.teamName = sess.teamName||'';
+
+    // Firebase 연결
+    if(!connectFbFromSession()) return false;
+
+    if(sess.role === 'admin'){
+      // 관리자: Firebase에서 전체 경매 상태 복원
+      fbDB.ref('auction').once('value', snap => {
+        const d = snap.val();
+        if(!d || !d.teamInfo) {
+          // 아직 경매 시작 안 된 상태 — 설정 화면으로
+          applyRoleUI();
+          showScreen('setup-screen');
+          return;
+        }
+        // 팀/선수 복원
+        S.teams = d.teamInfo;
+        if(d.players) S.players = d.players;
+        if(d.round) S.round = d.round;
+        applyRoleUI();
+        showScreen('auction-screen');
+        renderTeamsPanel(); renderQueue(); updateTopbar(); renderBidTeamSel();
+        showToast('⚙ 관리자 세션 복원됨');
+      });
+    } else if(sess.role === 'captain'){
+      applyRoleUI();
+      showScreen('auction-screen');
+      showToast(`🎮 ${sess.teamName} 팀장 세션 복원됨`);
+    } else {
+      applyRoleUI();
+      showScreen('auction-screen');
+      showToast('👁 관전자 세션 복원됨');
+    }
+    return true;
+  } catch(e){ return false; }
+}
+
 // Init
 generateTeams();renderPlayerTable();
+
+// 세션 자동 복원 — 새로고침/뒤로가기 시 자동으로 이전 상태 복원
+restoreSession();
 
 // BGM 자동 시작 — 사이트 첫 클릭 시 자동으로 켜짐
 // (브라우저 보안 정책: 소리는 반드시 사용자 클릭 이후에만 재생 가능)
