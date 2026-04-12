@@ -622,6 +622,14 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
                     <button class="btn btn-success btn-sm" onclick="confirmSold()">낙찰 ✓</button>
                     <button class="btn btn-warn btn-sm" onclick="confirmPass()">유찰 ✗</button>
                   </div>
+                  <!-- 강제 배정 버튼 — 모든 팀 당근 0일 때 표시 -->
+                  <div class="act-row hidden" id="force-assign-area" style="margin-top:6px;flex-direction:column;gap:6px;">
+                    <div style="font-size:10px;color:var(--red);letter-spacing:1px;text-align:center;">⚠ 모든 팀 당근 부족 — 강제 배정</div>
+                    <div style="display:flex;gap:6px;">
+                      <select class="form-input" id="force-team-sel" style="height:33px;font-size:11px;flex:1;"></select>
+                      <button class="btn btn-warn btn-sm" style="white-space:nowrap;" onclick="forceAssign()">강제 배정 ✓</button>
+                    </div>
+                  </div>
                   <div class="act-row" style="margin-top:4px;">
                     <button class="btn btn-ghost btn-sm" style="width:100%;letter-spacing:1px;" onclick="pickRandom()">🎲 랜덤 매물</button>
                   </div>
@@ -1448,7 +1456,76 @@ function renderBidTeamSel(){
   document.getElementById('bid-team-sel').innerHTML=S.teams.map((t,i)=>`<option value="${i}">${t.name}</option>`).join('');
 }
 
-// 랜덤 매물 선택 — 현재 대기열(현재 탭 기준) 중 미낙찰/미유찰 선수 중 랜덤
+// 강제 배정 — 모든 팀 당근 0일 때 관리자가 팀 지정
+function checkForceAssign(){
+  if(me.role !== 'admin') return;
+  const curTier = S.currentPlayer?.tier || 't1';
+  // 현재 군에서 인원 여유 있고 당근 0인 팀들
+  const allBroke = S.teams.every(t => t.pts <= 0);
+  const area = document.getElementById('force-assign-area');
+  if(!area) return;
+  if(allBroke && S.currentPlayer){
+    // 인원 여유 있는 팀만 표시
+    const eligible = S.teams.map((t,i)=>({t,i})).filter(({t})=>{
+      const cnt = t.members.filter(m=>(m.tier||'t1')===curTier).length;
+      const max = curTier==='t1'?(t.maxMembersT1||t.maxMembers||4):(t.maxMembersT2||t.maxMembers||4);
+      return cnt < max;
+    });
+    if(eligible.length){
+      const sel = document.getElementById('force-team-sel');
+      sel.innerHTML = eligible.map(({t,i})=>`<option value="${i}">${t.name}</option>`).join('');
+      area.classList.remove('hidden');
+      area.style.display='flex';
+    } else {
+      area.classList.add('hidden');
+    }
+  } else {
+    area.classList.add('hidden');
+  }
+}
+
+function forceAssign(){
+  if(!S.currentPlayer){showToast('선수를 먼저 선택하세요');return;}
+  const ti = parseInt(document.getElementById('force-team-sel').value);
+  const t = S.teams[ti]; const p = S.currentPlayer;
+  if(!t){showToast('팀을 선택하세요');return;}
+  const curTier = p.tier||'t1';
+  const cnt = t.members.filter(m=>(m.tier||'t1')===curTier).length;
+  const max = curTier==='t1'?(t.maxMembersT1||t.maxMembers||4):(t.maxMembersT2||t.maxMembers||4);
+  if(cnt >= max){showToast(`${t.name} 인원이 가득 찼습니다`);return;}
+  if(!confirm(`${p.nick}을(를) ${t.name}에 0🥕으로 강제 배정합니다. 계속할까요?`)) return;
+
+  // 0🥕으로 낙찰 처리
+  t.members.push({nick:p.nick, pos:p.pos, soldPts:0, tier:curTier});
+  p.sold=true; p.soldTo=ti; p.soldPts=0;
+
+  const overlayData = {type:'sold', text:`${p.nick} → ${t.name} (강제배정)`, ts:Date.now()};
+  if(fbDB){
+    fbDB.ref('auction').update({
+      teams: S.teams.map(tm=>({
+        name:tm.name, color:tm.color, symbol:tm.symbol||'🏆',
+        pts:tm.pts, initPts:tm.initPts,
+        initPtsT1:tm.initPtsT1, initPtsT2:tm.initPtsT2,
+        maxMembers:tm.maxMembers||4,
+        maxMembersT1:tm.maxMembersT1||tm.maxMembers||4,
+        maxMembersT2:tm.maxMembersT2||tm.maxMembers||4,
+        members:tm.members
+      })),
+      teamInfo: S.teams,
+      players: S.players,
+      bids: [], curIdx: null,
+      overlay: overlayData
+    });
+  }
+  SFX.sold();
+  showOverlay('sold', overlayData.text);
+  document.getElementById('force-assign-area').classList.add('hidden');
+  S.currentPlayer=null; S.curIdx=null; S.bids=[];
+  document.getElementById('spotlight').classList.add('hidden');
+  document.getElementById('no-auction').classList.remove('hidden');
+  clearBidDisplay(); renderBidHist(); renderTeamsPanel(); renderQueue(); updateTopbar(); closeAF();
+  setTimeout(()=>pickRandom(), 2400);
+}
 function pickRandom(){
   if(me.role!=='admin') return;
   const tierKey = currentQueueTier===1 ? 't1' : 't2';
@@ -1491,6 +1568,8 @@ function renderSpotlight(p){
   } else {
     m.classList.add('hidden');
   }
+  // 모든 팀 당근 0이면 강제 배정 버튼 표시
+  setTimeout(()=>checkForceAssign(), 100);
 }
 
 function renderBidHist(){
