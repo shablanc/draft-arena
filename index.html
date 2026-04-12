@@ -610,6 +610,9 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
                     <button class="btn btn-success btn-sm" onclick="confirmSold()">낙찰 ✓</button>
                     <button class="btn btn-warn btn-sm" onclick="confirmPass()">유찰 ✗</button>
                   </div>
+                  <div class="act-row" style="margin-top:4px;">
+                    <button class="btn btn-ghost btn-sm" style="width:100%;letter-spacing:1px;" onclick="pickRandom()">🎲 랜덤 매물</button>
+                  </div>
                 </div>
               </div>
               <!-- captain bid (카드 내부, 팀장용) -->
@@ -1312,7 +1315,12 @@ function startAuction(){
   saveSession();
   showScreen('auction-screen');
   renderTeamsPanel();renderQueue();updateTopbar();renderBidTeamSel();
-  setTimeout(()=>{ window.scrollTo(0,0); document.getElementById('stage-inner').scrollTop=0; }, 50);
+  setTimeout(()=>{
+    window.scrollTo(0,0);
+    document.getElementById('stage-inner').scrollTop=0;
+    // 경매 시작 시 자동으로 첫 랜덤 매물 선택
+    pickRandom();
+  }, 300);
 }
 
 // ════════════════════════════
@@ -1413,13 +1421,27 @@ function renderBidTeamSel(){
   document.getElementById('bid-team-sel').innerHTML=S.teams.map((t,i)=>`<option value="${i}">${t.name}</option>`).join('');
 }
 
+// 랜덤 매물 선택 — 현재 대기열(현재 탭 기준) 중 미낙찰/미유찰 선수 중 랜덤
+function pickRandom(){
+  if(me.role!=='admin') return;
+  const tierKey = currentQueueTier===1 ? 't1' : 't2';
+  const pool = S.players.map((p,i)=>({p,i}))
+    .filter(({p})=> p.tier===tierKey && !p.sold && !p.passed);
+  if(!pool.length){
+    showToast(`${tierKey==='t1'?'1군':'2군'} 남은 매물이 없습니다`);
+    return;
+  }
+  const pick = pool[Math.floor(Math.random()*pool.length)];
+  selectPlayer(pick.i);
+}
+
 function selectPlayer(i){
   if(me.role!=='admin')return;
   const p=S.players[i]; if(p.sold)return;
   SFX.playerReveal();
   S.currentPlayer=p; S.curIdx=i; S.bids=[]; S.round++;
   renderSpotlight(p); renderQueue(); updateTopbar();
-  renderBidHist(); // 2번: 새 선수 선택 시 입찰기록 초기화
+  renderBidHist();
   clearBidDisplay();
   closeRemain(); closeAF();
   fbSet('curIdx',i); fbSet('bids',[]); fbSet('round',S.round);
@@ -1560,6 +1582,8 @@ function confirmSold(){
   document.getElementById('spotlight').classList.add('hidden');
   document.getElementById('no-auction').classList.remove('hidden');
   clearBidDisplay(); renderBidHist(); renderTeamsPanel(); renderQueue(); updateTopbar(); closeAF();
+  // 자동으로 다음 랜덤 매물 (오버레이가 끝난 뒤)
+  setTimeout(()=>pickRandom(), 2400);
 }
 
 // Admin: pass
@@ -1586,6 +1610,8 @@ function confirmPass(){
   document.getElementById('spotlight').classList.add('hidden');
   document.getElementById('no-auction').classList.remove('hidden');
   clearBidDisplay(); renderBidHist(); renderQueue(); closeAF();
+  // 자동으로 다음 랜덤 매물 (오버레이가 끝난 뒤)
+  setTimeout(()=>pickRandom(), 2000);
 }
 
 function showOverlay(type, text){
