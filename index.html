@@ -1212,55 +1212,54 @@ function listenFirebase(){
       renderQueue();
     }
 
-    // 입찰 동기화
+    // 현재 경매 선수 동기화 — curIdx를 먼저 처리해서 카드 표시/숨김 결정
+    if('curIdx' in d){
+      const prevIdx = S.curIdx;
+      S.curIdx = d.curIdx;
+      if(d.curIdx !== null && S.players[d.curIdx]){
+        const isNew = prevIdx !== d.curIdx;
+        S.currentPlayer = S.players[d.curIdx];
+        document.getElementById('no-auction').classList.add('hidden');
+        document.getElementById('spotlight').classList.remove('hidden');
+        renderSpotlight(S.currentPlayer);
+        if(isNew && me.role !== 'admin'){
+          SFX.playerReveal();
+          S.bids = [];
+          renderBidHist();
+          clearBidDisplay();
+        }
+        const capBid = document.getElementById('captain-card-bid');
+        if(me.role === 'captain' && capBid) capBid.classList.remove('hidden');
+        renderQueue();
+      } else {
+        // 낙찰/유찰 후 — 선수 카드 완전히 숨기기 (팀장/관전자 포함)
+        S.currentPlayer = null;
+        document.getElementById('spotlight').classList.add('hidden');
+        document.getElementById('no-auction').classList.remove('hidden');
+        const capBid = document.getElementById('captain-card-bid');
+        if(capBid) capBid.classList.add('hidden');
+        clearBidDisplay();
+        renderBidHist();
+        renderQueue();
+      }
+    }
+
+    // 입찰 동기화 (curIdx 처리 후에)
     if(d.bids !== undefined){
       const prevLen = S.bids.length;
       S.bids = d.bids || [];
-      // 새 입찰이 들어왔으면 효과음 (관리자는 직접 입력 시 이미 소리 냄)
       if(S.bids.length > prevLen && me.role !== 'admin') SFX.bid();
-      renderBidHist();
-      updateBidDisplay();
+      // 현재 선수가 있을 때만 입찰 내역 표시
+      if(S.currentPlayer){
+        renderBidHist();
+        updateBidDisplay();
+      }
     }
 
     // 라운드 동기화
     if(d.round !== undefined){
       S.round = d.round;
       updateTopbar();
-    }
-
-    // 현재 경매 선수 동기화 — 팀장/관전자에게도 카드 표시
-    if('curIdx' in d){
-      const prevIdx = S.curIdx;
-      S.curIdx = d.curIdx;
-      if(d.curIdx !== null && S.players[d.curIdx]){
-        const isNew = prevIdx !== d.curIdx; // 이전과 다른 선수면 새 경매
-        S.currentPlayer = S.players[d.curIdx];
-        document.getElementById('no-auction').classList.add('hidden');
-        renderSpotlight(S.currentPlayer);
-        if(isNew && me.role !== 'admin'){
-          SFX.playerReveal();
-          // 2번 수정: 새 선수로 바뀌면 입찰기록 초기화
-          S.bids = [];
-          renderBidHist();
-          clearBidDisplay();
-        }
-        // 팀장이면 입찰 UI 표시
-        const capBid = document.getElementById('captain-card-bid');
-        if(me.role === 'captain' && capBid) capBid.classList.remove('hidden');
-        renderQueue();
-      } else {
-        // 낙찰/유찰 후 — 선수 카드 완전히 숨기기
-        S.currentPlayer = null;
-        document.getElementById('spotlight').classList.add('hidden');
-        document.getElementById('no-auction').classList.remove('hidden');
-        // 팀장 입찰 UI도 숨기기
-        const capBid = document.getElementById('captain-card-bid');
-        if(capBid) capBid.classList.add('hidden');
-        // 입찰 내역 초기화
-        clearBidDisplay();
-        renderBidHist();
-        renderQueue();
-      }
     }
 
     setFbUI(true);
