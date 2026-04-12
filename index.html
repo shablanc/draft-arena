@@ -459,7 +459,14 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
               <label class="form-label">2군 기본 당근 🥕</label>
               <input class="form-input" type="number" id="init-pts-t2" value="500" min="0" step="100" style="width:130px;">
             </div>
-            <div style="display:flex;flex-direction:column;gap:3px;"><label class="form-label">기본 최대 인원</label><input class="form-input" type="number" id="init-max" value="4" min="1" max="20" style="width:100px;"></div>
+            <div style="display:flex;flex-direction:column;gap:3px;">
+              <label class="form-label">⭐ 1군 최대 인원</label>
+              <input class="form-input" type="number" id="init-max-t1" value="4" min="1" max="20" style="width:110px;">
+            </div>
+            <div style="display:flex;flex-direction:column;gap:3px;">
+              <label class="form-label">🌙 2군 최대 인원</label>
+              <input class="form-input" type="number" id="init-max-t2" value="4" min="1" max="20" style="width:110px;">
+            </div>
             <button class="btn btn-outline btn-sm" onclick="generateTeams()">팀 생성</button>
           </div>
           <div class="teams-grid" id="teams-grid"></div>
@@ -1012,16 +1019,19 @@ function generateTeams() {
   const n = Math.min(parseInt(document.getElementById('team-count').value)||4, 16);
   const ptsT1 = parseInt(document.getElementById('init-pts-t1').value)||1000;
   const ptsT2 = parseInt(document.getElementById('init-pts-t2').value)||500;
-  const defaultMax = parseInt(document.getElementById('init-max').value)||4;
+  const maxT1 = parseInt(document.getElementById('init-max-t1').value)||4;
+  const maxT2 = parseInt(document.getElementById('init-max-t2').value)||4;
   S.teams = [];
   const g = document.getElementById('teams-grid'); g.innerHTML='';
   for (let i=0;i<n;i++) {
     S.teams.push({
       name:CNAMES[i%COLORS.length]+' 팀', color:COLORS[i%COLORS.length],
       symbol:'🏆',
-      pts:ptsT1, initPts:ptsT1,     // 현재 당근 (1군 시작값)
-      initPtsT1:ptsT1, initPtsT2:ptsT2, // 1군/2군 기본값 저장
-      maxMembers:defaultMax, members:[]
+      pts:ptsT1, initPts:ptsT1,
+      initPtsT1:ptsT1, initPtsT2:ptsT2,
+      maxMembersT1:maxT1, maxMembersT2:maxT2,
+      maxMembers:maxT1, // 하위 호환
+      members:[]
     });
     g.innerHTML+=`<div class="team-card-input" style="min-width:200px;">
       <input class="form-input" value="${CNAMES[i%COLORS.length]} 팀" oninput="S.teams[${i}].name=this.value" style="font-size:12px;">
@@ -1030,23 +1040,29 @@ function generateTeams() {
           <label style="font-size:10px;color:var(--text-dim);">심볼</label>
           <input class="form-input" value="🏆" oninput="S.teams[${i}].symbol=this.value" style="font-size:18px;width:48px;text-align:center;padding:4px;" maxlength="2" placeholder="심볼">
         </div>
-        <div style="flex:1;display:flex;flex-direction:column;gap:2px;min-width:70px;">
-          <label style="font-size:10px;color:var(--text-dim);">1군 당근 🥕</label>
+        <div style="flex:1;display:flex;flex-direction:column;gap:2px;min-width:65px;">
+          <label style="font-size:10px;color:rgba(255,220,50,0.8);">⭐ 1군 당근</label>
           <input class="form-input" type="number" value="${ptsT1}" min="0" step="100"
             oninput="S.teams[${i}].initPtsT1=+this.value;S.teams[${i}].initPts=+this.value;S.teams[${i}].pts=+this.value"
             style="font-size:12px;width:100%;">
         </div>
-        <div style="flex:1;display:flex;flex-direction:column;gap:2px;min-width:70px;">
-          <label style="font-size:10px;color:var(--text-dim);">2군 당근 🥕</label>
+        <div style="flex:1;display:flex;flex-direction:column;gap:2px;min-width:65px;">
+          <label style="font-size:10px;color:rgba(150,190,255,0.8);">🌙 2군 당근</label>
           <input class="form-input" type="number" value="${ptsT2}" min="0" step="100"
             oninput="S.teams[${i}].initPtsT2=+this.value"
             style="font-size:12px;width:100%;">
         </div>
         <div style="display:flex;flex-direction:column;gap:2px;">
-          <label style="font-size:10px;color:var(--text-dim);">최대 인원</label>
-          <input class="form-input" type="number" value="${defaultMax}" min="1" max="20"
-            oninput="S.teams[${i}].maxMembers=+this.value"
-            style="font-size:12px;width:60px;">
+          <label style="font-size:10px;color:rgba(255,220,50,0.8);">⭐ 1군 인원</label>
+          <input class="form-input" type="number" value="${maxT1}" min="1" max="20"
+            oninput="S.teams[${i}].maxMembersT1=+this.value;S.teams[${i}].maxMembers=+this.value"
+            style="font-size:12px;width:55px;">
+        </div>
+        <div style="display:flex;flex-direction:column;gap:2px;">
+          <label style="font-size:10px;color:rgba(150,190,255,0.8);">🌙 2군 인원</label>
+          <input class="form-input" type="number" value="${maxT2}" min="1" max="20"
+            oninput="S.teams[${i}].maxMembersT2=+this.value"
+            style="font-size:12px;width:55px;">
         </div>
       </div>
       <div class="color-row" style="margin-top:4px;">${COLORS.map((c,ci)=>`<div class="cdot ${ci===i%COLORS.length?'on':''}" style="background:${c};" onclick="setColor(${i},${ci},this)"></div>`).join('')}</div>
@@ -1305,6 +1321,8 @@ function startAuction(){
       initPtsT1:t.initPtsT1||t.initPts,
       initPtsT2:t.initPtsT2||t.initPts,
       maxMembers:t.maxMembers||4,
+      maxMembersT1:t.maxMembersT1||t.maxMembers||4,
+      maxMembersT2:t.maxMembersT2||t.maxMembers||4,
       members:t.members
     })));
     fbSet('teamInfo', S.teams);
@@ -1360,10 +1378,9 @@ function renderTeamsPanel(){
         <div style="text-align:right;">
           <div class="tc-pts" style="color:${t.pts<=0?'var(--red)':''}">${t.pts}🥕</div>
           <div style="font-size:10px;color:var(--text-dim);">
-            <span style="color:${t1members.length>=(t.maxMembers||4)?'var(--green)':'rgba(255,220,50,0.7)'};">⭐${t1members.length}</span>
-            <span style="color:var(--text-dim);"> / </span>
-            <span style="color:${t2members.length>=(t.maxMembers||4)?'var(--green)':'rgba(150,190,255,0.7)'};">🌙${t2members.length}</span>
-            <span style="color:var(--text-dim);"> / ${t.maxMembers||4}명</span>
+            <span style="color:${t1members.length>=(t.maxMembersT1||t.maxMembers||4)?'var(--green)':'rgba(255,220,50,0.7)'};">⭐${t1members.length}/${t.maxMembersT1||t.maxMembers||4}</span>
+            <span style="color:var(--text-dim);"> · </span>
+            <span style="color:${t2members.length>=(t.maxMembersT2||t.maxMembers||4)?'var(--green)':'rgba(150,190,255,0.7)'};">🌙${t2members.length}/${t.maxMembersT2||t.maxMembers||4}</span>
           </div>
         </div>
       </div>
@@ -1506,8 +1523,8 @@ function placeBid(){
   // 현재 군(tier) 기준으로만 인원 체크
   const curTier = S.currentPlayer?.tier||'t1';
   const tierCount = t.members.filter(m=>(m.tier||'t1')===curTier).length;
-  if(tierCount >= (t.maxMembers||4)){
-    showToast(`❌ ${t.name}은 이미 ${curTier==='t1'?'1군':'2군'}에서 ${t.maxMembers||4}명을 낙찰받았습니다`);return;
+  if(tierCount >= (curTier==='t1'?(t.maxMembersT1||t.maxMembers||4):(t.maxMembersT2||t.maxMembers||4))){
+    showToast(`❌ ${t.name}은 이미 ${curTier==='t1'?'1군':'2군'}에서 ${curTier==='t1'?(t.maxMembersT1||t.maxMembers||4):(t.maxMembersT2||t.maxMembers||4)}명을 낙찰받았습니다`);return;
   }
   // 최소 호가 체크 (관리자는 면제)
   const minBid = S.currentPlayer?.minBid||0;
@@ -1536,8 +1553,8 @@ function captainBid(){
   // 현재 군(tier) 기준으로만 인원 체크
   const curTier = S.currentPlayer?.tier||'t1';
   const tierCount = t.members.filter(m=>(m.tier||'t1')===curTier).length;
-  if(tierCount >= (t.maxMembers||4)){
-    showToast(`❌ ${t.name}은 이미 ${curTier==='t1'?'1군':'2군'}에서 ${t.maxMembers||4}명을 낙찰받았습니다`);return;
+  if(tierCount >= (curTier==='t1'?(t.maxMembersT1||t.maxMembers||4):(t.maxMembersT2||t.maxMembers||4))){
+    showToast(`❌ ${t.name}은 이미 ${curTier==='t1'?'1군':'2군'}에서 ${curTier==='t1'?(t.maxMembersT1||t.maxMembers||4):(t.maxMembersT2||t.maxMembers||4)}명을 낙찰받았습니다`);return;
   }
 
   const input = document.getElementById('cap-pts');
@@ -1572,8 +1589,8 @@ function confirmSold(){
   // 현재 군(tier) 기준으로만 인원 체크
   const curTier = p.tier||'t1';
   const tierCount = t.members.filter(m=>(m.tier||'t1')===curTier).length;
-  if(tierCount >= (t.maxMembers||4)){
-    showToast(`❌ ${t.name}은 이미 ${curTier==='t1'?'1군':'2군'}에서 ${t.maxMembers||4}명을 낙찰받았습니다`);return;
+  if(tierCount >= (curTier==='t1'?(t.maxMembersT1||t.maxMembers||4):(t.maxMembersT2||t.maxMembers||4))){
+    showToast(`❌ ${t.name}은 이미 ${curTier==='t1'?'1군':'2군'}에서 ${curTier==='t1'?(t.maxMembersT1||t.maxMembers||4):(t.maxMembersT2||t.maxMembers||4)}명을 낙찰받았습니다`);return;
   }
 
   t.pts = Math.max(0, t.pts - top.pts);
