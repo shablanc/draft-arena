@@ -1443,13 +1443,19 @@ function renderQueue(){
 function reAuction(i){
   if(me.role!=='admin') return;
   const p = S.players[i];
-  p.passed = false;
+  if(p.sold){showToast('이미 낙찰된 선수입니다');return;}
+  p.passed = false; // 유찰 해제
   SFX.playerReveal();
   S.currentPlayer=p; S.curIdx=i; S.bids=[]; S.round++;
   renderSpotlight(p); renderQueue(); updateTopbar(); renderBidHist(); clearBidDisplay();
   closeRemain(); closeAF();
-  fbSet('curIdx',i); fbSet('bids',[]); fbSet('round',S.round);
-  fbSet('players', S.players);
+  // passed 상태 Firebase에 반영
+  fbDB.ref('auction').update({
+    players: S.players,
+    curIdx: i,
+    bids: [],
+    round: S.round
+  });
 }
 
 function renderBidTeamSel(){
@@ -1541,7 +1547,8 @@ function pickRandom(){
 
 function selectPlayer(i){
   if(me.role!=='admin')return;
-  const p=S.players[i]; if(p.sold)return;
+  const p=S.players[i];
+  if(p.sold){showToast('이미 낙찰된 선수입니다');return;}
   SFX.playerReveal();
   S.currentPlayer=p; S.curIdx=i; S.bids=[]; S.round++;
   renderSpotlight(p); renderQueue(); updateTopbar();
@@ -1664,6 +1671,7 @@ function confirmSold(){
   if(!S.currentPlayer){showToast('선수를 먼저 선택하세요');return;}
   if(!S.bids.length){showToast('입찰 내역이 없습니다');return;}
   const top=S.bids[0],t=S.teams[top.team],p=S.currentPlayer;
+  if(p.sold){showToast('이미 낙찰된 선수입니다');return;}
   if(top.pts > t.pts){showToast(`${t.name} 당근이 부족합니다 (보유: ${t.pts}🥕)`);return;}
   // 현재 군(tier) 기준으로만 인원 체크
   const curTier = p.tier||'t1';
@@ -1674,7 +1682,7 @@ function confirmSold(){
 
   t.pts = Math.max(0, t.pts - top.pts);
   t.members.push({nick:p.nick, pos:p.pos, soldPts:top.pts, tier:p.tier||'t1'});
-  p.sold=true; p.soldTo=top.team; p.soldPts=top.pts;
+  p.sold=true; p.passed=false; p.soldTo=top.team; p.soldPts=top.pts;
 
   const overlayData = {type:'sold', text:`${p.nick} → ${t.name} (${top.pts}🥕)`, ts:Date.now()};
 
