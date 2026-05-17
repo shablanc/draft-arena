@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>경매 선수 뽑기</title>
+<title>제 5회 별당근</title>
 <link href="https://fonts.googleapis.com/css2?family=Jua&family=Noto+Sans+KR:wght@300;400;500;700&family=Rajdhani:wght@500;700&display=swap" rel="stylesheet">
 <style>
 :root {
@@ -358,7 +358,7 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
 ══════════════════════════════════ -->
 <div class="screen active" id="role-screen">
   <div class="role-wrap">
-    <div class="role-title">경매 선수 뽑기</div>
+    <div class="role-title">제 5회 별당근</div>
     <div class="role-sub">✦ &nbsp; 최고의 팀을 완성하라! &nbsp; ✦</div>
     <div style="text-align:center;margin-bottom:20px;">
       <button class="btn btn-ghost btn-sm bgm-toggle-btn" onclick="toggleBGM()" style="letter-spacing:1px;">🎵 BGM</button>
@@ -553,7 +553,7 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
 ══════════════════════════════════ -->
 <div class="screen" id="auction-screen">
   <div class="topbar">
-    <div class="topbar-logo">✦ 경매 선수 뽑기 ✦</div>
+    <div class="topbar-logo">✦ 제 5회 별당근 ✦</div>
     <div class="topbar-mid">
       <b id="tb-round">라운드 —</b>
       <b id="tb-remain">남은 선수 —</b>
@@ -681,7 +681,7 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
 ══════════════════════════════════ -->
 <div class="screen" id="result-screen">
   <div class="topbar">
-    <div class="topbar-logo">✦ 경매 선수 뽑기 ✦</div>
+    <div class="topbar-logo">✦ 제 5회 별당근 ✦</div>
     <div class="topbar-right">
       <button class="btn btn-outline btn-sm" onclick="showScreen('auction-screen')">← 경매로</button>
       <button class="btn btn-ghost btn-sm" onclick="showScreen('role-screen')">🏠 홈</button>
@@ -1313,12 +1313,17 @@ function setFbUI(on){
 function startAuction(){
   if(!S.teams.length){showToast('팀을 먼저 생성하세요');return;}
   if(!playerList.t1.length && !playerList.t2.length){showToast('선수를 등록하세요');return;}
-  // 1티어/2티어 합쳐서 players 배열 생성 (tier 태그 유지)
+  // 1군은 필수, 2군은 있을 때만 포함
   const t1 = playerList.t1.map(p=>({...p,tier:'t1'}));
   const t2 = playerList.t2.map(p=>({...p,tier:'t2'}));
-  S.players = [...t1, ...t2];
-  S.teams.forEach(t=>{t.pts=t.initPts;t.members=[];});
-  S.round=0;S.bids=[];S.currentPlayer=null;S.curIdx=null;
+  S.players = t2.length ? [...t1, ...t2] : [...t1];
+  // 1군 경매 시작 — 각 팀의 1군 당근으로 초기화
+  S.teams.forEach(t=>{
+    t.pts = t.initPtsT1 || t.initPts || 0;
+    t.initPts = t.pts;
+    t.members = [];
+  });
+  S.round=0; S.bids=[]; S.currentPlayer=null; S.curIdx=null;
 
   const fbOk = connectFb(FB_CONFIG);
   if(fbOk){
@@ -1555,7 +1560,14 @@ function selectPlayer(i){
   renderBidHist();
   clearBidDisplay();
   closeRemain(); closeAF();
-  fbSet('curIdx',i); fbSet('bids',[]); fbSet('round',S.round);
+  // bids와 curIdx를 원자적으로 동시에 업데이트 (겹침 방지)
+  if(fbDB){
+    fbDB.ref('auction').update({
+      curIdx: i,
+      bids: [],
+      round: S.round
+    });
+  }
 }
 
 function renderSpotlight(p){
@@ -1686,12 +1698,24 @@ function confirmSold(){
 
   const overlayData = {type:'sold', text:`${p.nick} → ${t.name} (${top.pts}🥕)`, ts:Date.now()};
 
+  // 로컬 상태 먼저 완전 초기화 (팀장이 동시에 입찰해도 무시되도록)
+  S.currentPlayer=null; S.curIdx=null; S.bids=[];
+  clearBidDisplay(); renderBidHist();
+
   if(fbDB){
     fbDB.ref('auction').update({
-      teams: S.teams.map(tm=>({pts:tm.pts, members:tm.members})),
+      teams: S.teams.map(tm=>({
+        name:tm.name, color:tm.color, symbol:tm.symbol||'🏆',
+        pts:tm.pts, initPts:tm.initPts,
+        initPtsT1:tm.initPtsT1||tm.initPts, initPtsT2:tm.initPtsT2||0,
+        maxMembers:tm.maxMembers||4,
+        maxMembersT1:tm.maxMembersT1||tm.maxMembers||4,
+        maxMembersT2:tm.maxMembersT2||tm.maxMembers||4,
+        members:tm.members
+      })),
       teamInfo: S.teams,
       players: S.players,
-      bids: [],        // 2번: 입찰기록 초기화
+      bids: [],
       curIdx: null,
       overlay: overlayData
     });
@@ -1699,11 +1723,9 @@ function confirmSold(){
 
   SFX.sold();
   showOverlay('sold', overlayData.text);
-  S.currentPlayer=null; S.curIdx=null; S.bids=[];
   document.getElementById('spotlight').classList.add('hidden');
   document.getElementById('no-auction').classList.remove('hidden');
-  clearBidDisplay(); renderBidHist(); renderTeamsPanel(); renderQueue(); updateTopbar(); closeAF();
-  // 자동으로 다음 랜덤 매물 (오버레이가 끝난 뒤)
+  renderTeamsPanel(); renderQueue(); updateTopbar(); closeAF();
   setTimeout(()=>pickRandom(), 2400);
 }
 
@@ -1711,15 +1733,18 @@ function confirmSold(){
 function confirmPass(){
   if(!S.currentPlayer){showToast('선수를 먼저 선택하세요');return;}
   const p = S.currentPlayer;
-  // 3번: 유찰 표시
   p.passed = true;
 
   const overlayData = {type:'pass', text:`${p.nick} — 유찰`, ts:Date.now()};
 
+  // 로컬 상태 먼저 완전 초기화
+  S.currentPlayer=null; S.curIdx=null; S.bids=[];
+  clearBidDisplay(); renderBidHist();
+
   if(fbDB){
     fbDB.ref('auction').update({
-      players: S.players,  // passed 상태 저장
-      bids: [],             // 2번: 입찰기록 초기화
+      players: S.players,
+      bids: [],
       curIdx: null,
       overlay: overlayData
     });
@@ -1727,11 +1752,9 @@ function confirmPass(){
 
   SFX.pass();
   showOverlay('pass', overlayData.text);
-  S.currentPlayer=null; S.curIdx=null; S.bids=[];
   document.getElementById('spotlight').classList.add('hidden');
   document.getElementById('no-auction').classList.remove('hidden');
-  clearBidDisplay(); renderBidHist(); renderQueue(); closeAF();
-  // 자동으로 다음 랜덤 매물 (오버레이가 끝난 뒤)
+  renderQueue(); closeAF();
   setTimeout(()=>pickRandom(), 2000);
 }
 
