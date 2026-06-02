@@ -452,22 +452,28 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
           <div style="display:flex;gap:9px;align-items:flex-end;flex-wrap:wrap;margin-bottom:11px;">
             <div style="display:flex;flex-direction:column;gap:3px;"><label class="form-label">팀 수</label><input class="form-input" type="number" id="team-count" value="4" min="2" max="16" style="width:70px;"></div>
             <div style="display:flex;flex-direction:column;gap:3px;">
-              <label class="form-label">1군 기본 당근 🥕</label>
+              <label class="form-label">⭐ 1군 기본 당근 🥕</label>
               <input class="form-input" type="number" id="init-pts-t1" value="1000" min="0" step="100" style="width:130px;">
-            </div>
-            <div style="display:flex;flex-direction:column;gap:3px;">
-              <label class="form-label">2군 기본 당근 🥕</label>
-              <input class="form-input" type="number" id="init-pts-t2" value="500" min="0" step="100" style="width:130px;">
             </div>
             <div style="display:flex;flex-direction:column;gap:3px;">
               <label class="form-label">⭐ 1군 최대 인원</label>
               <input class="form-input" type="number" id="init-max-t1" value="4" min="1" max="20" style="width:110px;">
             </div>
-            <div style="display:flex;flex-direction:column;gap:3px;">
-              <label class="form-label">🌙 2군 최대 인원</label>
-              <input class="form-input" type="number" id="init-max-t2" value="4" min="1" max="20" style="width:110px;">
+            <!-- 2군 설정 (기본 숨김) -->
+            <div id="t2-settings" style="display:none;gap:9px;align-items:flex-end;flex-wrap:wrap;">
+              <div style="display:flex;flex-direction:column;gap:3px;">
+                <label class="form-label">🌙 2군 기본 당근 🥕</label>
+                <input class="form-input" type="number" id="init-pts-t2" value="500" min="0" step="100" style="width:130px;">
+              </div>
+              <div style="display:flex;flex-direction:column;gap:3px;">
+                <label class="form-label">🌙 2군 최대 인원</label>
+                <input class="form-input" type="number" id="init-max-t2" value="4" min="1" max="20" style="width:110px;">
+              </div>
             </div>
-            <button class="btn btn-outline btn-sm" onclick="generateTeams()">팀 생성</button>
+            <div style="display:flex;flex-direction:column;gap:6px;">
+              <button class="btn btn-ghost btn-sm" id="t2-toggle-btn" onclick="toggleT2Settings()" style="font-size:11px;white-space:nowrap;">🌙 2군 추가</button>
+              <button class="btn btn-outline btn-sm" onclick="generateTeams()">팀 생성</button>
+            </div>
           </div>
           <div class="teams-grid" id="teams-grid"></div>
         </div>
@@ -1023,12 +1029,34 @@ function applyRoleUI() {
 // ════════════════════════════
 //  SETUP
 // ════════════════════════════
+let t2Enabled = false;
+function toggleT2Settings(){
+  t2Enabled = !t2Enabled;
+  const area = document.getElementById('t2-settings');
+  const btn  = document.getElementById('t2-toggle-btn');
+  if(t2Enabled){
+    area.style.display = 'flex';
+    btn.textContent = '🌙 2군 제거';
+    btn.style.color = 'var(--gold)';
+    btn.style.borderColor = 'var(--gold)';
+  } else {
+    area.style.display = 'none';
+    btn.textContent = '🌙 2군 추가';
+    btn.style.color = '';
+    btn.style.borderColor = '';
+  }
+  // 이미 팀이 생성되어 있으면 팀 카드 즉시 업데이트
+  if(S.teams.length) generateTeams();
+}
+
 function generateTeams() {
   const n = Math.min(parseInt(document.getElementById('team-count').value)||4, 16);
-  const ptsT1 = parseInt(document.getElementById('init-pts-t1').value)||1000;
-  const ptsT2 = parseInt(document.getElementById('init-pts-t2').value)||500;
-  const maxT1 = parseInt(document.getElementById('init-max-t1').value)||4;
-  const maxT2 = parseInt(document.getElementById('init-max-t2').value)||4;
+  const ptsT1  = parseInt(document.getElementById('init-pts-t1').value)||1000;
+  const maxT1  = parseInt(document.getElementById('init-max-t1').value)||4;
+  // 2군 설정 — 활성화된 경우에만 읽기
+  const ptsT2  = t2Enabled ? (parseInt(document.getElementById('init-pts-t2').value)||500) : 0;
+  const maxT2  = t2Enabled ? (parseInt(document.getElementById('init-max-t2').value)||4) : 0;
+
   S.teams = [];
   const g = document.getElementById('teams-grid'); g.innerHTML='';
   for (let i=0;i<n;i++) {
@@ -1038,7 +1066,7 @@ function generateTeams() {
       pts:ptsT1, initPts:ptsT1,
       initPtsT1:ptsT1, initPtsT2:ptsT2,
       maxMembersT1:maxT1, maxMembersT2:maxT2,
-      maxMembers:maxT1, // 하위 호환
+      maxMembers:maxT1,
       members:[]
     });
     g.innerHTML+=`<div class="team-card-input" style="min-width:200px;">
@@ -1054,28 +1082,29 @@ function generateTeams() {
             oninput="S.teams[${i}].initPtsT1=+this.value;S.teams[${i}].initPts=+this.value;S.teams[${i}].pts=+this.value"
             style="font-size:12px;width:100%;">
         </div>
-        <div style="flex:1;display:flex;flex-direction:column;gap:2px;min-width:65px;">
+        ${t2Enabled?`<div style="flex:1;display:flex;flex-direction:column;gap:2px;min-width:65px;">
           <label style="font-size:10px;color:rgba(150,190,255,0.8);">🌙 2군 당근</label>
           <input class="form-input" type="number" value="${ptsT2}" min="0" step="100"
             oninput="S.teams[${i}].initPtsT2=+this.value"
             style="font-size:12px;width:100%;">
-        </div>
+        </div>`:''}
         <div style="display:flex;flex-direction:column;gap:2px;">
           <label style="font-size:10px;color:rgba(255,220,50,0.8);">⭐ 1군 인원</label>
           <input class="form-input" type="number" value="${maxT1}" min="1" max="20"
             oninput="S.teams[${i}].maxMembersT1=+this.value;S.teams[${i}].maxMembers=+this.value"
             style="font-size:12px;width:55px;">
         </div>
-        <div style="display:flex;flex-direction:column;gap:2px;">
+        ${t2Enabled?`<div style="display:flex;flex-direction:column;gap:2px;">
           <label style="font-size:10px;color:rgba(150,190,255,0.8);">🌙 2군 인원</label>
           <input class="form-input" type="number" value="${maxT2}" min="1" max="20"
             oninput="S.teams[${i}].maxMembersT2=+this.value"
             style="font-size:12px;width:55px;">
-        </div>
+        </div>`:''}
       </div>
       <div class="color-row" style="margin-top:4px;">${COLORS.map((c,ci)=>`<div class="cdot ${ci===i%COLORS.length?'on':''}" style="background:${c};" onclick="setColor(${i},${ci},this)"></div>`).join('')}</div>
     </div>`;
   }
+  showToast(`✓ ${n}개 팀 생성 완료`);
 }
 function setColor(ti,ci,el){S.teams[ti].color=COLORS[ci];el.closest('.team-card-input').querySelectorAll('.cdot').forEach(d=>d.classList.remove('on'));el.classList.add('on');}
 function switchTierTab(tier){
