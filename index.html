@@ -588,7 +588,12 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
     <div class="center-stage">
       <div class="stage-inner">
         <div class="stage-glow"></div>
-        <div id="no-auction" class="no-auction">선수를 선택해<br>경매를 시작하세요</div>
+        <div id="no-auction" class="no-auction">
+          <div>선수를 선택해<br>경매를 시작하세요</div>
+          <div id="first-pick-btn" class="hidden" style="margin-top:28px;">
+            <button class="btn btn-gold" style="font-size:15px;padding:12px 32px;letter-spacing:2px;" onclick="pickRandom()">🎲 첫 매물 랜덤 뽑기</button>
+          </div>
+        </div>
         <div id="spotlight" class="spotlight hidden">
           <div class="pcard">
             <div class="pcard-top">
@@ -608,6 +613,11 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
             </div>
             <div class="bh-wrap">
               <div class="bh-title">입찰 내역</div>
+              <!-- 카운트다운 타이머 -->
+              <div id="bid-countdown" class="hidden" style="text-align:center;margin-bottom:8px;">
+                <div style="font-family:'Rajdhani',sans-serif;font-size:32px;font-weight:700;color:var(--gold);line-height:1;" id="countdown-num">3</div>
+                <div style="font-size:10px;color:var(--text-dim);letter-spacing:2px;">낙찰 카운트다운</div>
+              </div>
               <div class="bh-list" id="bh-list"><div style="font-size:11px;color:var(--text-dim);padding:2px 7px;">입찰 내역 없음</div></div>
             </div>
             <div class="bid-area">
@@ -1321,6 +1331,8 @@ function listenFirebase(){
       const prevLen = S.bids.length;
       S.bids = d.bids || [];
       if(S.bids.length > prevLen && me.role !== 'admin') SFX.bid();
+      // 관리자: 새 입찰 들어오면 카운트다운 재시작
+      if(S.bids.length > prevLen && me.role === 'admin') startCountdown();
       // 현재 선수가 있을 때만 입찰 내역 표시
       if(S.currentPlayer){
         renderBidHist();
@@ -1390,8 +1402,7 @@ function startAuction(){
   setTimeout(()=>{
     window.scrollTo(0,0);
     document.getElementById('stage-inner').scrollTop=0;
-    // 경매 시작 시 자동으로 첫 랜덤 매물 선택
-    pickRandom();
+    showFirstPickBtn(true); // 첫 매물 버튼 표시
   }, 300);
 }
 
@@ -1549,10 +1560,60 @@ function manualForceAssign(){
   document.getElementById('spotlight').classList.add('hidden');
   document.getElementById('no-auction').classList.remove('hidden');
   renderTeamsPanel(); renderQueue(); updateTopbar(); closeAF();
-  setTimeout(()=>pickRandom(), 2400);
+  setTimeout(()=>{showFirstPickBtn(true);pickRandom();}, 2400);
 }
 
-// 강제 배정 — 모든 팀 당근 0일 때 관리자가 팀 지정
+// ════════════════════════════
+//  카운트다운 타이머
+// ════════════════════════════
+let countdownTimer = null;
+let countdownVal = 0;
+
+function startCountdown(){
+  if(me.role !== 'admin') return; // 관리자만 카운트다운 실행
+  stopCountdown();
+  countdownVal = 3;
+  const el = document.getElementById('countdown-num');
+  const wrap = document.getElementById('bid-countdown');
+  if(!el || !wrap) return;
+  wrap.classList.remove('hidden');
+  el.textContent = countdownVal;
+  el.style.color = 'var(--gold)';
+
+  countdownTimer = setInterval(()=>{
+    countdownVal--;
+    if(countdownVal <= 0){
+      stopCountdown();
+      // 입찰이 있으면 자동 낙찰
+      if(S.bids.length && S.currentPlayer){
+        showToast('⏰ 카운트다운 종료 — 낙찰!');
+        confirmSold();
+      }
+    } else {
+      el.textContent = countdownVal;
+      el.style.color = countdownVal === 1 ? 'var(--red)' : 'var(--gold)';
+      // 카운트다운 효과음
+      SFX.click();
+    }
+  }, 1000);
+}
+
+function stopCountdown(){
+  if(countdownTimer){
+    clearInterval(countdownTimer);
+    countdownTimer = null;
+  }
+  const wrap = document.getElementById('bid-countdown');
+  if(wrap) wrap.classList.add('hidden');
+}
+
+// 첫 매물 버튼 표시 (경매 화면 진입 후, 아직 선수 없을 때 관리자에게만)
+function showFirstPickBtn(show){
+  const btn = document.getElementById('first-pick-btn');
+  if(!btn) return;
+  if(show && me.role === 'admin') btn.classList.remove('hidden');
+  else btn.classList.add('hidden');
+}
 function checkForceAssign(){
   if(me.role !== 'admin') return;
   const curTier = S.currentPlayer?.tier || 't1';
@@ -1620,7 +1681,7 @@ function forceAssign(){
   document.getElementById('spotlight').classList.add('hidden');
   document.getElementById('no-auction').classList.remove('hidden');
   clearBidDisplay(); renderBidHist(); renderTeamsPanel(); renderQueue(); updateTopbar(); closeAF();
-  setTimeout(()=>pickRandom(), 2400);
+  setTimeout(()=>{showFirstPickBtn(true);pickRandom();}, 2400);
 }
 function pickRandom(){
   if(me.role!=='admin') return;
@@ -1640,12 +1701,13 @@ function selectPlayer(i){
   const p=S.players[i];
   if(p.sold){showToast('이미 낙찰된 선수입니다');return;}
   SFX.playerReveal();
+  showFirstPickBtn(false); // 첫 매물 버튼 숨김
+  stopCountdown(); // 이전 카운트다운 초기화
   S.currentPlayer=p; S.curIdx=i; S.bids=[]; S.round++;
   renderSpotlight(p); renderQueue(); updateTopbar();
   renderBidHist();
   clearBidDisplay();
   closeRemain(); closeAF();
-  // bids와 curIdx를 원자적으로 동시에 업데이트 (겹침 방지)
   if(fbDB){
     fbDB.ref('auction').update({
       curIdx: i,
@@ -1720,6 +1782,7 @@ function placeBid(){
   document.getElementById('bid-pts').value='';
   fbSet('bids',S.bids);
   showToast(`${t.name} — ${pts}🥕 입찰`);
+  startCountdown(); // 입찰마다 카운트다운 재시작
 }
 
 // 팀별 최대 인원은 S.teams[i].maxMembers 로 관리
@@ -1785,6 +1848,7 @@ function confirmSold(){
 
   // 로컬 상태 먼저 완전 초기화 (팀장이 동시에 입찰해도 무시되도록)
   S.currentPlayer=null; S.curIdx=null; S.bids=[];
+  stopCountdown();
   clearBidDisplay(); renderBidHist();
 
   if(fbDB){
@@ -1811,7 +1875,7 @@ function confirmSold(){
   document.getElementById('spotlight').classList.add('hidden');
   document.getElementById('no-auction').classList.remove('hidden');
   renderTeamsPanel(); renderQueue(); updateTopbar(); closeAF();
-  setTimeout(()=>pickRandom(), 2400);
+  setTimeout(()=>{showFirstPickBtn(true);pickRandom();}, 2400);
 }
 
 // Admin: pass
@@ -1824,6 +1888,7 @@ function confirmPass(){
 
   // 로컬 상태 먼저 완전 초기화
   S.currentPlayer=null; S.curIdx=null; S.bids=[];
+  stopCountdown();
   clearBidDisplay(); renderBidHist();
 
   if(fbDB){
@@ -1840,7 +1905,7 @@ function confirmPass(){
   document.getElementById('spotlight').classList.add('hidden');
   document.getElementById('no-auction').classList.remove('hidden');
   renderQueue(); closeAF();
-  setTimeout(()=>pickRandom(), 2000);
+  setTimeout(()=>{showFirstPickBtn(true);pickRandom();}, 2000);
 }
 
 function showOverlay(type, text){
